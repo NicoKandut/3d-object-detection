@@ -11,7 +11,7 @@ from pyvox.models import Model as VoxModel, Voxel
 
 from yolo3d.model import model_tiny_yolov1
 from yolo3d.dataset import load_label
-from yolo3d.loss import yolo_loss
+from yolo3d.loss import iou, yolo_loss
 from yolo3d.coordinates import xyzwhd_to_minmax, from_cell_repr
 
 def get_class_name(class_confidence):
@@ -35,61 +35,66 @@ def get_class_color(pred_class):
         return 236
     return 216
 
-if __name__ == '__main__': 
-    sample_name = sys.argv[1]
+def by_trust(predicted_box):
+    (trust, *_) = predicted_box
+    return trust
 
-    # setup model
-    input_shape = (1, 28, 28, 28, 3)
-    inputs = Input(input_shape[1:5])
-    outputs = model_tiny_yolov1(inputs, 2)
-    model = Model(inputs=inputs, outputs=outputs)
-    model.load_weights('final-weights.hdf5', by_name=True)
+def trust_greater_threshold(predicted_box):
+    (trust, *_) = predicted_box
+    return trust > 0.5
 
-    # load data
-    vox_file = VoxParser(f"../dataset-3d-minecraft/{sample_name}.vox").parse()
-    vox_rgb = vox_file.to_dense_rgb() / 255.
-    vox_rgb = np.reshape(vox_rgb, input_shape)
-    print(f"Predicting objects in: {sample_name}")
-
-    # predict
-    y = model.predict(vox_rgb, batch_size=1)
-    y = K.variable(y)
-
-    y_true = load_label(f"../dataset-3d-minecraft/{sample_name}.txt", 28)
-    y_true = K.variable(y_true)
-
-    loss = yolo_loss(y_true, y)
-    print(f"Loss for this sample is {loss}")
-
-    print("EXPECTED VALUES FOR THIS SAMPLE:")
-    for i in range(y_true.shape[0]):
-        for j in range(y_true.shape[1]):
-            for k in range(y_true.shape[2]):
-                response = y_true[i, j, k]
-                if response[8] > 0.5:
-                    y_class = get_class_name(response[0:2])
-                    xyz, whd = from_cell_repr(np.array([i,j,k]), response[2:5], response[5:8], 7, 28)
-                    p0, p1 = xyzwhd_to_minmax(xyz, whd)
-                    print(f"  - 1.0 {y_class} @ ({p0[0]:.1f} {p0[1]:.1f} {p0[2]:.1f}), ({p1[0]:.1f} {p1[1]:.1f} {p1[2]:.1f})")
-
+def get_predicted_boxes(y):
     predicted_boxes = []
 
-    print("Predicted objects in this sample:")
     for i in range(y.shape[1]):
         for j in range(y.shape[2]):
             for k in range(y.shape[3]):
                 prediction = y[0, i, j, k]
                 trust = prediction[8]
-                if trust > 0.4:
-                    pred_class = get_class_name(prediction[0:2])
-                    xyz, whd = from_cell_repr(np.array([i,j,k]), prediction[2:5], prediction[5:8], 7, 28)
-                    p0, p1 = xyzwhd_to_minmax(xyz, whd)
-                    print(f"  - {trust:.1f} {pred_class} @ ({p0[0]:.1f} {p0[1]:.1f} {p0[2]:.1f}), ({p1[0]:.1f} {p1[1]:.1f} {p1[2]:.1f})")
-                    predicted_boxes.append((pred_class, p0, p1))
-    
-    for (pred_class, p0, p1) in predicted_boxes:
-        c = get_class_color(pred_class)
+                pred_class = get_class_name(prediction[0:2])
+                xyz, whd = from_cell_repr(np.array([i,j,k]), prediction[2:5], prediction[5:8], 7, 28)
+                p0, p1 = xyzwhd_to_minmax(xyz, whd)
+                predicted_boxes.append((trust, pred_class, p0, p1))
 
+    return predicted_boxes
+
+def extract_most_relevant_boxes(predicted_boxes):
+    predicted_boxes = list(filter(trust_greater_threshold, predicted_boxes))
+    predicted_boxes.sort(key=by_trust, reverse=True)
+
+    final_boxes = []
+    for (new_trust, new_class, new_p0, new_p1) in predicted_boxes:
+        should_add = True
+        for (final_trust, final_class, final_p0, final_p1) in final_boxes:
+            if new_class == final_class and iou(new_p0, new_p1, final_p0, final_p1) > 0.5:
+                should_add = False
+        
+        if should_add:
+            final_boxes.append((new_trust, new_class, new_p0, new_p1))
+    return predicted_boxes
+
+def print_boxes(boxes):
+    for (trust, y_class, p0, p1) in boxes:
+         print(f"  - {trust:.1f} {y_class} @ ({p0[0]:.1f} {p0[1]:.1f} {p0[2]:.1f}), ({p1[0]:.1f} {p1[1]:.1f} {p1[2]:.1f})")
+
+def get_expected_boxes(y):
+    expected_boxes = []
+
+    for i in range(y.shape[0]):
+        for j in range(y.shape[1]):
+            for k in range(y.shape[2]):
+                response = y[i, j, k]
+                if response[8] > 0.5:
+                    y_class = get_class_name(response[0:2])
+                    xyz, whd = from_cell_repr(np.array([i,j,k]), response[2:5], response[5:8], 7, 28)
+                    p0, p1 = xyzwhd_to_minmax(xyz, whd)
+                    expected_boxes.append((1.0, y_class, p0, p1))
+
+    return expected_boxes
+
+def save_boxes_to_file(sample_name, vox_file, predicted_boxes):
+    for (_, pred_class, p0, p1) in predicted_boxes:
+        c = get_class_color(pred_class)
         p0 = K.cast(K.round(p0), "int32")
         p1 = K.cast(K.round(p1), "int32")
 
@@ -112,6 +117,45 @@ if __name__ == '__main__':
             vox_file.models[0].voxels.append(Voxel(p1[0]-1,p1[1]-1, z, c))
 
     VoxWriter(f"{sample_name}_prediction.vox", vox_file).write()
+
+if __name__ == '__main__': 
+    sample_name = sys.argv[1]
+
+    # setup model
+    input_shape = (1, 28, 28, 28, 3)
+    inputs = Input(input_shape[1:5])
+    outputs = model_tiny_yolov1(inputs, 2)
+    model = Model(inputs=inputs, outputs=outputs)
+    model.load_weights('final-weights.hdf5', by_name=True)
+
+    # load data
+    vox_file = VoxParser(f"../dataset-3d-minecraft/{sample_name}.vox").parse()
+    vox_rgb = vox_file.to_dense_rgb() / 255.
+    vox_rgb = np.reshape(vox_rgb, input_shape)
+    print(f"Predicting objects in: {sample_name}")
+
+    # predict
+    y = model.predict(vox_rgb, batch_size=1)
+    y = K.variable(y)
+
+    # compare with label
+    y_true = load_label(f"../dataset-3d-minecraft/{sample_name}.txt", 28)
+    y_true = K.variable(y_true)
+    
+    loss = yolo_loss(y_true, y)
+    
+    expected_boxes = get_expected_boxes(y_true)
+
+    predicted_boxes = get_predicted_boxes(y)
+    predicted_boxes = extract_most_relevant_boxes(predicted_boxes)
+
+    print("Expected boxes for this sample:")
+    print_boxes(expected_boxes)
+    print("Predicted boxes for this sample:")
+    print_boxes(predicted_boxes)
+    print(f"Loss for this sample is {loss}")
+
+    save_boxes_to_file(sample_name, vox_file, predicted_boxes)
 
 
 
