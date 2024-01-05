@@ -1,7 +1,6 @@
 
 from keras.layers import BatchNormalization, Layer
-from keras.layers import Conv3D, MaxPooling3D, \
-    Flatten, Dense, LeakyReLU
+from keras.layers import Conv3D, MaxPooling3D, Flatten, Dense, LeakyReLU
 from keras.regularizers import l2
 import keras.backend as K
 

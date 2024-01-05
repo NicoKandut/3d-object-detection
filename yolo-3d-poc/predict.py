@@ -104,13 +104,13 @@ def save_boxes_to_file(sample_name, vox_file, predicted_boxes):
             vox_file.models[0].voxels.append(Voxel(x,p1[1]-1,p0[2],c))
             vox_file.models[0].voxels.append(Voxel(x,p1[1]-1,p1[2]-1,c))
 
-        for y in range(p0[1], p1[1]):
+        for y in range(p0[1] + 1, p1[1] - 1):
             vox_file.models[0].voxels.append(Voxel(p0[0],y,p0[2],c))
             vox_file.models[0].voxels.append(Voxel(p0[0],y,p1[2]-1,c))
             vox_file.models[0].voxels.append(Voxel(p1[0]-1,y,p0[2],c))
             vox_file.models[0].voxels.append(Voxel(p1[0]-1,y,p1[2]-1,c))
         
-        for z in range(p0[2], p1[2]):
+        for z in range(p0[2] + 1, p1[2] - 1):
             vox_file.models[0].voxels.append(Voxel(p0[0],p0[1], z, c))
             vox_file.models[0].voxels.append(Voxel(p0[0],p1[1]-1, z, c))
             vox_file.models[0].voxels.append(Voxel(p1[0]-1,p0[1], z, c))

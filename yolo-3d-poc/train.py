@@ -1,6 +1,5 @@
 import os
 import argparse
-import sys
 
 from keras.layers import Input
 from keras.models import Model
