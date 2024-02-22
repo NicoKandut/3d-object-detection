@@ -2,3 +2,8 @@
 * explain how 2d approaches handle large datasets
 * propose a solution for 3d based on papers and existing research
 * write java code for it
+
+intermediate format will be necesarry
+off format for princeton benchmark
+different model sizes + parameter + weights file
+try out uniform feature extractors

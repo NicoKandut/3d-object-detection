@@ -41,40 +41,44 @@ class Yolo_Reshape(Layer):
         return outputs
 
 
-def model_tiny_yolov1(inputs, num_classes):
-    # x = Conv2D(16, (3, 3), padding='same', name='convolutional_0', use_bias=False,
-    #            kernel_regularizer=l2(5e-4), trainable=False)(inputs)
-    # x = BatchNormalization(name='bnconvolutional_0', trainable=False)(x)
-    # x = LeakyReLU(alpha=0.1)(x)
-    # x = MaxPooling2D((2, 2), strides=(2, 2), padding='same')(x)
+def model_tiny_yolov1(inputs, num_classes, pooling_layers=2, output_size=7):
+    x = inputs
 
-    # x = Conv2D(32, (3, 3), padding='same', name='convolutional_1', use_bias=False,
-    #            kernel_regularizer=l2(5e-4), trainable=False)(x)
-    # x = BatchNormalization(name='bnconvolutional_1', trainable=False)(x)
-    # x = LeakyReLU(alpha=0.1)(x)
-    # x = MaxPooling2D((2, 2), strides=(2, 2), padding='same')(x)
+    if pooling_layers >= 6:
+        x = Conv3D(16, (3, 3, 3), padding='same', name='convolutional_0', use_bias=False, kernel_regularizer=l2(5e-4), trainable=False)(x)
+        x = BatchNormalization(name='bnconvolutional_0', trainable=False)(x)
+        x = LeakyReLU(alpha=0.1)(x)
+        x = MaxPooling3D((2, 2, 2), strides=(2, 2, 2), padding='same')(x)
 
-    # x = Conv2D(64, (3, 3), padding='same', name='convolutional_2', use_bias=False,
-    #            kernel_regularizer=l2(5e-4), trainable=False)(x)
-    # x = BatchNormalization(name='bnconvolutional_2', trainable=False)(x)
-    # x = LeakyReLU(alpha=0.1)(x)
-    # x = MaxPooling2D((2, 2), strides=(2, 2), padding='same')(x)
+    if pooling_layers >= 5:
+        x = Conv3D(32, (3, 3, 3), padding='same', name='convolutional_1', use_bias=False, kernel_regularizer=l2(5e-4), trainable=False)(x)
+        x = BatchNormalization(name='bnconvolutional_1', trainable=False)(x)
+        x = LeakyReLU(alpha=0.1)(x)
+        x = MaxPooling3D((2, 2, 2), strides=(2, 2, 2), padding='same')(x)
 
-    # x = Conv2D(128, (3, 3), padding='same', name='convolutional_3', use_bias=False,
-    #            kernel_regularizer=l2(5e-4), trainable=False)(x)
-    # x = BatchNormalization(name='bnconvolutional_3', trainable=False)(x)
-    # x = LeakyReLU(alpha=0.1)(x)
-    # x = MaxPooling2D((2, 2), strides=(2, 2), padding='same')(x)
+    if pooling_layers >= 4:
+        x = Conv3D(64, (3, 3, 3), padding='same', name='convolutional_2', use_bias=False, kernel_regularizer=l2(5e-4), trainable=False)(x)
+        x = BatchNormalization(name='bnconvolutional_2', trainable=False)(x)
+        x = LeakyReLU(alpha=0.1)(x)
+        x = MaxPooling3D((2, 2, 2), strides=(2, 2, 2), padding='same')(x)
 
-    x = Conv3D(256, (3, 3, 3), padding='same', name='convolutional_4', use_bias=False, kernel_regularizer=l2(5e-4), trainable=False)(inputs)
-    x = BatchNormalization(name='bnconvolutional_4', trainable=False)(x)
-    x = LeakyReLU(alpha=0.1)(x)
-    x = MaxPooling3D((2, 2, 2), strides=(2, 2, 2), padding='same')(x)
+    if pooling_layers >= 3:
+        x = Conv3D(128, (3, 3, 3), padding='same', name='convolutional_3', use_bias=False, kernel_regularizer=l2(5e-4), trainable=False)(x)
+        x = BatchNormalization(name='bnconvolutional_3', trainable=False)(x)
+        x = LeakyReLU(alpha=0.1)(x)
+        x = MaxPooling3D((2, 2, 2), strides=(2, 2, 2), padding='same')(x)
 
-    x = Conv3D(512, (3, 3, 3), padding='same', name='convolutional_5', use_bias=False, kernel_regularizer=l2(5e-4), trainable=False)(x)
-    x = BatchNormalization(name='bnconvolutional_5', trainable=False)(x)
-    x = LeakyReLU(alpha=0.1)(x)
-    x = MaxPooling3D((2, 2, 2), strides=(2, 2, 2), padding='same')(x)
+    if pooling_layers >= 2:
+        x = Conv3D(256, (3, 3, 3), padding='same', name='convolutional_4', use_bias=False, kernel_regularizer=l2(5e-4), trainable=False)(x)
+        x = BatchNormalization(name='bnconvolutional_4', trainable=False)(x)
+        x = LeakyReLU(alpha=0.1)(x)
+        x = MaxPooling3D((2, 2, 2), strides=(2, 2, 2), padding='same')(x)
+
+    if pooling_layers >= 1:
+        x = Conv3D(512, (3, 3, 3), padding='same', name='convolutional_5', use_bias=False, kernel_regularizer=l2(5e-4), trainable=False)(x)
+        x = BatchNormalization(name='bnconvolutional_5', trainable=False)(x)
+        x = LeakyReLU(alpha=0.1)(x)
+        x = MaxPooling3D((2, 2, 2), strides=(2, 2, 2), padding='same')(x)
 
     x = Conv3D(1024, (3, 3, 3), padding='same', name='convolutional_6', use_bias=False, kernel_regularizer=l2(5e-4), trainable=False)(x)
     x = BatchNormalization(name='bnconvolutional_6', trainable=False)(x)
@@ -85,7 +89,7 @@ def model_tiny_yolov1(inputs, num_classes):
     x = LeakyReLU(alpha=0.1)(x)
 
     x = Flatten()(x)
-    x = Dense(7 * 7 * 7 * (num_classes + 7), activation='linear', name='connected_0')(x)
-    outputs = Yolo_Reshape((7, 7, 7, (num_classes + 7)))(x)
+    x = Dense(output_size * output_size * output_size * (num_classes + 7), activation='linear', name='connected_0')(x)
+    outputs = Yolo_Reshape((output_size, output_size, output_size, (num_classes + 7)))(x)
 
     return outputs

@@ -26,7 +26,7 @@ if __name__ == '__main__':
         # run_eagerly=True
     )
 
-    # model.summary()
+    model.summary()
 
     save_dir = 'checkpoints'
     weights_path = os.path.join(save_dir, 'weights.hdf5')

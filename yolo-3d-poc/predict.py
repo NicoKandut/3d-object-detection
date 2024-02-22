@@ -4,6 +4,7 @@ import numpy as np
 
 from keras.layers import Input
 from keras.models import Model
+import tensorflow as tf
 
 from pyvox.parser import VoxParser
 from pyvox.writer import VoxWriter
@@ -133,6 +134,8 @@ if __name__ == '__main__':
     vox_rgb = vox_file.to_dense_rgb() / 255.
     vox_rgb = np.reshape(vox_rgb, input_shape)
     print(f"Predicting objects in: {sample_name}")
+
+    tf.saved_model.save(model, "saved_model")
 
     # predict
     y = model.predict(vox_rgb, batch_size=1)
