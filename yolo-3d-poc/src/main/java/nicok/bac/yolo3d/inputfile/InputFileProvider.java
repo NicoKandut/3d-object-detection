@@ -1,27 +1,31 @@
 package nicok.bac.yolo3d.inputfile;
 
+import java.io.IOException;
+
 import static java.lang.String.format;
 
 public final class InputFileProvider {
-    public static InputFile get(String path) {
+
+    public static InputFile get(final String path) throws IOException {
         final var extension = getExtension(path);
 
         return switch (extension) {
             case "vox" -> new VoxAdapter(path);
             case "off" -> new OffAdapter(path);
-            default -> throw new IllegalArgumentException(
-                    format("InputFileProvider does not support .%s files", extension)
-            );
+            default -> throw new IllegalExtensionException(extension);
         };
     }
 
-    private static String getExtension(String path) {
+    private static String getExtension(final String path) {
         final var parts = path.split("\\.");
 
         if (parts.length < 2) {
-            throw new IllegalArgumentException("Path must have extension");
+            throw new IllegalPathException(path);
         }
 
         return parts[parts.length - 1];
+    }
+
+    private InputFileProvider() {
     }
 }

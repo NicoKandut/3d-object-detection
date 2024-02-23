@@ -35,4 +35,9 @@ public record Point(double x, double y, double z) {
                 a.z - b.z
         );
     }
+
+    @Override
+    public String toString() {
+        return "(" + x + ", " + y + ", " + z + ")";
+    }
 }

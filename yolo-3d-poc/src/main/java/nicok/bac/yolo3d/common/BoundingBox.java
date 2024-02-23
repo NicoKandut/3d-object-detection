@@ -2,6 +2,10 @@ package nicok.bac.yolo3d.common;
 
 public record BoundingBox(Point min, Point max) {
 
+    public Point size() {
+        return Point.sub(max, min);
+    }
+
     public static double getIntersectOverUnion(BoundingBox a, BoundingBox b) {
         final var intersectMin = Point.max(a.min, b.min);
         final var intersectMax = Point.min(a.max, b.max);
@@ -16,5 +20,12 @@ public record BoundingBox(Point min, Point max) {
         final var unionVolume = predVolume + trueVolume - intersectVolume;
 
         return intersectVolume / unionVolume;
+    }
+
+    public static BoundingBox addOffset(BoundingBox box, Point offset) {
+        return new BoundingBox(
+                Point.add(box.min, offset),
+                Point.add(box.max, offset)
+        );
     }
 }
