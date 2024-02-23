@@ -8,14 +8,17 @@ import java.util.List;
 
 import static java.util.Comparator.comparing;
 
-public record BoxFilter(double threshold) {
+public record BoxFilter(
+        double confidenceThreshold,
+        double iouThreshold
+) {
 
-    public List<ResultBoundingBox> filter(List<ResultBoundingBox> boxes) {
+    public List<ResultBoundingBox> filter(final List<ResultBoundingBox> boxes) {
 
         // sort boxes by confidence
         final var qualifiedBoxes = boxes.stream()
                 .sorted(comparing(ResultBoundingBox::confidence).reversed())
-                .filter(box -> box.confidence() >= threshold)
+                .filter(box -> box.confidence() >= confidenceThreshold)
                 .toList();
 
         // exclude boxes with high intersect over union
@@ -23,11 +26,11 @@ public record BoxFilter(double threshold) {
         for (final var box : qualifiedBoxes) {
             var isNew = true;
             for (final var addedBox : result) {
-                if (box.category() == addedBox.category() && BoundingBox.getIntersectOverUnion(box.boundingBox(), addedBox.boundingBox()) > 0.5) {
+                if (box.category() == addedBox.category() && BoundingBox.getIntersectOverUnion(box.boundingBox(), addedBox.boundingBox()) > iouThreshold) {
                     isNew = false;
                 }
             }
-            if(isNew) {
+            if (isNew) {
                 result.add(box);
             }
         }

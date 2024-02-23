@@ -2,8 +2,6 @@ package nicok.bac.yolo3d.inputfile;
 
 import java.io.IOException;
 
-import static java.lang.String.format;
-
 public final class InputFileProvider {
 
     public static InputFile get(final String path) throws IOException {
@@ -12,6 +10,7 @@ public final class InputFileProvider {
         return switch (extension) {
             case "vox" -> new VoxAdapter(path);
             case "off" -> new OffAdapter(path);
+            case "obj" -> null;
             default -> throw new IllegalExtensionException(extension);
         };
     }

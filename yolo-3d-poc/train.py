@@ -58,4 +58,6 @@ if __name__ == '__main__':
     )
 
     model.save_weights('final-weights.hdf5')
+    model.save("saved_model")
+
     

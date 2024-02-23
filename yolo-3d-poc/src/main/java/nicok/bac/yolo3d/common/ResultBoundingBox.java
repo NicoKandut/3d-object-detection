@@ -81,4 +81,9 @@ public record ResultBoundingBox(
                 new Point(maxX, maxY, maxZ)
         );
     }
+
+    @Override
+    public String toString() {
+        return String.format("%f %s %s", confidence, category, boundingBox);
+    }
 }

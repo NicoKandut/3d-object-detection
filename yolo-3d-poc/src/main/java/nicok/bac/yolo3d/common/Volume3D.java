@@ -21,8 +21,7 @@ public class Volume3D {
     }
 
     public Tensor toTensor() {
-        final var tensor = TFloat32.tensorOf(data);
-        return tensor;
+        return TFloat32.tensorOf(data);
     }
 
 }

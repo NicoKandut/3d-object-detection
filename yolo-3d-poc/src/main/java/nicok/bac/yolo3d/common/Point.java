@@ -38,6 +38,6 @@ public record Point(double x, double y, double z) {
 
     @Override
     public String toString() {
-        return "(" + x + ", " + y + ", " + z + ")";
+        return String.format("(%.1f, %.1f, %.1f)", x, y, z);
     }
 }

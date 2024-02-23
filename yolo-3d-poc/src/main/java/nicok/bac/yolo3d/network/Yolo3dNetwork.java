@@ -12,14 +12,9 @@ import java.util.Map;
 
 public class Yolo3dNetwork implements Network, AutoCloseable {
 
-    private final String file;
-    private SavedModelBundle savedModelBundle;
+    private final SavedModelBundle savedModelBundle;
 
-    public Yolo3dNetwork(String file) {
-        this.file = file;
-    }
-
-    public void loadWeights() {
+    public Yolo3dNetwork(final String file) {
         savedModelBundle = SavedModelBundle.load(file);
     }
 
@@ -53,7 +48,6 @@ public class Yolo3dNetwork implements Network, AutoCloseable {
 
         return boundingBoxes;
     }
-
 
     @Override
     public void close() {

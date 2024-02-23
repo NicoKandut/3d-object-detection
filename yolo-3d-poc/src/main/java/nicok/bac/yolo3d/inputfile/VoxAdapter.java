@@ -1,92 +1,73 @@
 package nicok.bac.yolo3d.inputfile;
 
-import com.scs.voxlib.*;
+import com.scs.voxlib.VoxFile;
+import com.scs.voxlib.VoxReader;
+import com.scs.voxlib.Voxel;
 import nicok.bac.yolo3d.common.BoundingBox;
 import nicok.bac.yolo3d.common.Point;
 import nicok.bac.yolo3d.common.Volume3D;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class VoxAdapter implements InputFile {
 
     private final List<Voxel> voxels;
     private final int[] palette;
+    private final BoundingBox boundingBox;
 
 
     public VoxAdapter(final String path) throws IOException {
+        try (final var reader = new VoxReader(new FileInputStream(path))) {
+            final var voxFile = reader.read();
 
-        VoxReader reader = new VoxReader(new FileInputStream(path));
-        final var voxFile = reader.read();
-
-        palette = voxFile.getPalette();
-        voxels = new ArrayList<>();
-
-        for (VoxModelInstance model_instance : voxFile.getModelInstances()) {
-            GridPoint3 world_Offset = model_instance.worldOffset;
-            VoxModelBlueprint model = model_instance.model;
-            for (Voxel voxel : model.getVoxels()) {
-                final int x = world_Offset.x + voxel.getPosition().x;
-                final int y = world_Offset.y + voxel.getPosition().y;
-                final int z = world_Offset.z + voxel.getPosition().z;
-
-                voxels.add(new Voxel(x, y, z, voxel.getColourIndexByte()));
-            }
+            palette = voxFile.getPalette();
+            voxels = getVoxels(voxFile);
+            boundingBox = getBoundingBox(voxFile);
         }
-
-        reader.close();
-
     }
 
     @Override
     public Volume3D read(final BoundingBox target) {
         final var volume = new Volume3D(
-                (int) (target.max().x() - target.min().x()),
                 (int) (target.max().y() - target.min().y()),
-                (int) (target.max().z() - target.min().z())
+                (int) (target.max().z() - target.min().z()),
+                (int) (target.max().x() - target.min().x())
         );
 
-        for (final var v : voxels) {
-            if (
-                    v.getPosition().x >= target.min().x() && v.getPosition().x < target.max().x() &&
-                            v.getPosition().y >= target.min().y() && v.getPosition().y < target.max().y() &&
-                            v.getPosition().z >= target.min().z() && v.getPosition().z < target.max().z()
-            ) {
-                final var material = palette[v.getColourIndex()];
-                final var r = (float) (material >> 24 & 0xFF);
-                final var g = (float) (material >> 16 & 0xFF);
-                final var b = (float) (material >> 8 & 0xFF);
-                volume.set(v.getPosition().x, v.getPosition().y, v.getPosition().z, r, g, b);
-            }
-        }
+        voxels.stream()
+                .filter(voxel -> target.contains(voxel.getPosition()))
+                .forEach(v -> {
+                    final var material = palette[v.getColourIndex()];
+                    final var r = (float) (material & 0xFF) / 255f;
+                    final var g = (float) (material >> 8 & 0xFF) / 255f;
+                    final var b = (float) (material >> 16 & 0xFF) / 255f;
+                    final var x = v.getPosition().y - (int) target.min().y();
+                    final var y = (int) target.size().z() - (v.getPosition().z % (int) target.size().z()) - 1;
+                    final var z = v.getPosition().x - (int) target.min().x();
+                    volume.set(x, y, z, r, g, b);
+                });
 
         return volume;
     }
 
     @Override
     public BoundingBox getBoundingBox() {
-        float minX = Float.MAX_VALUE;
-        float minY = Float.MAX_VALUE;
-        float minZ = Float.MAX_VALUE;
-        float maxX = Float.MIN_VALUE;
-        float maxY = Float.MIN_VALUE;
-        float maxZ = Float.MIN_VALUE;
+        return boundingBox;
+    }
 
-        for (final var v : voxels) {
-            final var position = v.getPosition();
-            minX = Float.min(minX, position.x);
-            minY = Float.min(minY, position.y);
-            minZ = Float.min(minZ, position.z);
-            maxX = Float.max(maxX, position.x);
-            maxY = Float.max(maxY, position.y);
-            maxZ = Float.max(maxZ, position.z);
-        }
+    private static List<Voxel> getVoxels(final VoxFile voxFile) {
+        assert (voxFile.getModelInstances().size() == 1);
+        return Arrays.stream(voxFile.getModelInstances().get(0).model.getVoxels()).toList();
+    }
 
+    private static BoundingBox getBoundingBox(final VoxFile voxFile) {
+        final var size = voxFile.getModelInstances().get(0).model.getSize();
         return new BoundingBox(
-                new Point(minX, minY, minZ),
-                new Point(maxX + 1, maxY + 1, maxZ + 1)
+                new Point(0, 0, 0),
+                new Point(size.x, size.y, size.z)
         );
     }
 }

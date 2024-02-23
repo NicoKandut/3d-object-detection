@@ -18,7 +18,13 @@ public record Scanner(Network network) {
 
         System.out.printf("File size %s\n", extent.size());
 
-        int nrScans = 0;
+        final var scansWidth = Math.ceil(extent.size().x() / network.getExtent().x());
+        final var scansHeight = Math.ceil(extent.size().y() / network.getExtent().y());
+        final var scansDepth = Math.ceil(extent.size().z() / network.getExtent().z());
+
+        final var estimatedScans = scansWidth * scansHeight * scansDepth;
+
+        var nrScans = 0;
 
         for (var z = extent.min().z(); z < extent.max().z(); z += kernelSize.z()) {
             for (var y = extent.min().y(); y < extent.max().y(); y += kernelSize.y()) {
@@ -30,12 +36,14 @@ public record Scanner(Network network) {
                     final var boundingBoxes = network.compute(box, volume);
 
                     objects.addAll(boundingBoxes);
-                    nrScans++;
+                    ++nrScans;
+
+                    System.out.printf("Scan %d of %d: %.0f%%\n", nrScans, (int) estimatedScans, nrScans / estimatedScans * 100);
                 }
             }
         }
 
-        System.out.printf("Number of scans %d\n", nrScans);
+//        System.out.printf("Number of scans %d\n", nrScans);
 
         System.out.printf("Got %d bounding boxes to evaluate\n", objects.size());
 
