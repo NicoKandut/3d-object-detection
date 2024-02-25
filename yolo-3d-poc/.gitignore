@@ -45,3 +45,9 @@ saved_model
 *.hdf5
 *.cfg
 *.weights
+*.off
+*.zip
+*.h5
+
+off
+poly2vox

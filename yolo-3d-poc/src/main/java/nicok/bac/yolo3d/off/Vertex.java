@@ -5,4 +5,27 @@ public record Vertex(
         double y,
         double z
 ) {
+    public static Vertex add(final Vertex a, final Vertex b) {
+        return new Vertex(
+                a.x + b.x,
+                a.y + b.y,
+                a.z + b.z
+        );
+    }
+
+    public static Vertex sub(final Vertex a, final Vertex b) {
+        return new Vertex(
+                a.x - b.x,
+                a.y - b.y,
+                a.z - b.z
+        );
+    }
+
+    public static Vertex mul(double d, Vertex p) {
+        return new Vertex(
+                d * p.x,
+                d * p.y,
+                d * p.z
+        );
+    }
 }

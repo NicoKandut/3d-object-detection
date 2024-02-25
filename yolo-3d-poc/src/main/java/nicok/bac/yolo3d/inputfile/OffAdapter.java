@@ -107,11 +107,11 @@ public class OffAdapter implements InputFile {
 
 
 
-                        if (distance < nearestDistance) {
-//                            System.out.println(" - new distance: " + distance);
-                            nearestDistance = distance;
-                            nearestFace = face;
-                        }
+//                        if (distance < nearestDistance) {
+////                            System.out.println(" - new distance: " + distance);
+//                            nearestDistance = distance;
+//                            nearestFace = face;
+//                        }
                     }
 
                     assert (nearestFace != null);

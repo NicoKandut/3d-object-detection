@@ -5,8 +5,6 @@ import com.scs.voxlib.VoxWriter;
 import com.scs.voxlib.chunk.VoxRootChunk;
 import com.scs.voxlib.chunk.VoxSizeChunk;
 import com.scs.voxlib.chunk.VoxXYZIChunk;
-import nicok.bac.yolo3d.common.BoundingBox;
-import nicok.bac.yolo3d.common.Point;
 import nicok.bac.yolo3d.common.Volume3D;
 import nicok.bac.yolo3d.inputfile.InputFileProvider;
 
@@ -23,7 +21,7 @@ public class Main {
     public static final String OFF_PATH = REPOSITORY_PATH + "/yolo-3d-poc/mushroom.off";
 
     public static void main(String[] args) throws Exception {
-        final var inputFile = InputFileProvider.get(OFF_PATH);
+        final var inputFile = InputFileProvider.get("C:\\src\\bac\\yolo-3d-poc\\off\\MeshsegBenchmark-1.0\\data\\off\\9.off");
 
         final var min = inputFile.getBoundingBox().min();
         final var mid = inputFile.getBoundingBox().center();
@@ -71,7 +69,8 @@ public class Main {
 
         for (final var box : boxes) {
             Volume3D volume = inputFile.read(box);
-            try (final var writer = new VoxWriter(new FileOutputStream("chunk_" + ids.nextInt() + ".vox"))) {
+            final var filename = "chunk_" + ids.nextInt() + ".vox";
+            try (final var writer = new VoxWriter(new FileOutputStream(filename))) {
                 final var root = new VoxRootChunk();
 
                 final var size = box.size();
@@ -81,6 +80,8 @@ public class Main {
                 final var voxels = volume.toVoxels();
                 final var chunk = new VoxXYZIChunk(voxels);
                 root.appendChunk(chunk);
+
+                System.out.println("Saving to " + filename);
 
                 writer.write(new VoxFile(VoxWriter.VERSION, root));
             } catch (IOException e) {

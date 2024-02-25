@@ -2,6 +2,7 @@ package nicok.bac.yolo3d.off;
 
 import nicok.bac.yolo3d.common.Point;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public record Face(
@@ -43,5 +44,26 @@ public record Face(
                 zSum / vertexIndices.size(),
                 ySum / vertexIndices.size()
         );
+    }
+
+    /**
+     * Converts a face with any number of vertices to a triangle fan.
+     */
+    public List<TriangleIndex> toTriangles() {
+        if (vertexIndices.size() < 3) {
+            System.out.println("WARNING: face with less than 3 vertices detected");
+        }
+
+        final var triangles = new ArrayList<TriangleIndex>(vertexIndices.size() - 2);
+        final var i0 = 0;
+        for (var i1 = 1; i1 < vertexIndices.size() - 1; ++i1) {
+            final var i2 = i1 + 1;
+            triangles.add(new TriangleIndex(
+                    vertexIndices.get(i0),
+                    vertexIndices.get(i1),
+                    vertexIndices.get(i2)
+            ));
+        }
+        return triangles;
     }
 }
