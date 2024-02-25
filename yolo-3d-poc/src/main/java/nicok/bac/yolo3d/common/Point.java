@@ -36,8 +36,41 @@ public record Point(double x, double y, double z) {
         );
     }
 
+    public static Point mul(double d, Point p) {
+        return new Point(
+                d * p.x,
+                d * p.y,
+                d * p.z
+        );
+    }
+
     @Override
     public String toString() {
         return String.format("(%.1f, %.1f, %.1f)", x, y, z);
+    }
+
+    public double squaredLength() {
+        return x * x + y * y + z * z;
+    }
+
+    public static double dot(final Point a, final Point b) {
+        return a.x * b.x + a.y * b.y + a.z * b.z;
+    }
+
+    public Point normalize() {
+        final var length = Math.sqrt(squaredLength());
+        return new Point(
+                x / length,
+                y / length,
+                z / length
+        );
+    }
+
+    public static Point cross(final Point v1, final Point v2) {
+        return new Point(
+                v1.y() * v2.z() - v1.z() * v2.y(),
+                v1.z() * v2.x() - v1.x() * v2.z(),
+                v1.x() * v2.y() - v1.y() * v2.x()
+        );
     }
 }

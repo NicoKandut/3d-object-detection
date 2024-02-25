@@ -1,10 +1,8 @@
 package nicok.bac.yolo3d.inputfile;
 
-import java.io.IOException;
-
 public final class InputFileProvider {
 
-    public static InputFile get(final String path) throws IOException {
+    public static InputFile get(final String path) throws Exception {
         final var extension = getExtension(path);
 
         return switch (extension) {

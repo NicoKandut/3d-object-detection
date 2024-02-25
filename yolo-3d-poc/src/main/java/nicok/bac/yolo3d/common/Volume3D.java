@@ -1,10 +1,14 @@
 package nicok.bac.yolo3d.common;
 
+import com.scs.voxlib.Voxel;
 import org.tensorflow.Tensor;
 import org.tensorflow.ndarray.FloatNdArray;
 import org.tensorflow.ndarray.NdArrays;
 import org.tensorflow.ndarray.Shape;
 import org.tensorflow.types.TFloat32;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Volume3D {
 
@@ -24,4 +28,22 @@ public class Volume3D {
         return TFloat32.tensorOf(data);
     }
 
+    public List<Voxel> toVoxels() {
+        final var voxels = new ArrayList<Voxel>();
+        for (var i = 0; i < data.shape().get(1); ++i) {
+            for (var j = 0; j < data.shape().get(2); ++j) {
+                for (var k = 0; k < data.shape().get(3); ++k) {
+                    final var value = data.get(0, i, j, k);
+                    final var r = value.getFloat(0);
+                    final var g = value.getFloat(1);
+                    final var b = value.getFloat(2);
+
+                    if (r + g + b > 0) {
+                        voxels.add(new Voxel(i, j, k, (byte) 80));
+                    }
+                }
+            }
+        }
+        return voxels;
+    }
 }

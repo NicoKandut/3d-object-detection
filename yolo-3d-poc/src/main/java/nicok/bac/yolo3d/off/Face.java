@@ -1,0 +1,47 @@
+package nicok.bac.yolo3d.off;
+
+import nicok.bac.yolo3d.common.Point;
+
+import java.util.List;
+
+public record Face(
+        List<Long> vertexIndices
+) {
+    public Point normal(final List<Vertex> vertices) {
+        final var a = vertices.get(vertexIndices().get(0).intValue());
+        final var b = vertices.get(vertexIndices().get(1).intValue());
+        final var c = vertices.get(vertexIndices().get(2).intValue());
+
+        final var v1 = new Point(
+                b.x() - a.x(),
+                b.y() - a.y(),
+                b.z() - a.z()
+        );
+        final var v2 = new Point(
+                b.x() - c.x(),
+                b.y() - c.y(),
+                b.z() - c.z()
+        );
+
+        return Point.cross(v1, v2);
+    }
+
+    public Point center(final List<Vertex> vertices) {
+        var xSum = 0.0;
+        var ySum = 0.0;
+        var zSum = 0.0;
+
+        for (final var index : vertexIndices) {
+            final var vertex = vertices.get(index.intValue());
+            xSum += vertex.x();
+            ySum += vertex.y();
+            zSum += vertex.z();
+        }
+
+        return new Point(
+                xSum / vertexIndices.size(),
+                zSum / vertexIndices.size(),
+                ySum / vertexIndices.size()
+        );
+    }
+}
