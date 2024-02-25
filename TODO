@@ -1,7 +1,7 @@
 - Collect more 2d approaches
 - explain how 2d approaches handle large datasets
 - propose a solution for 3d based on papers and existing research
-- write java code for it
+- write java code for it    
 
 intermediate format will be necessary
 off format for princeton benchmark
@@ -15,3 +15,4 @@ test with noise data
 use rgba?
 use single value? (maybe even boolean)
 off voxelization?
+off voxelization for empty/full chunks? skip them completely?
