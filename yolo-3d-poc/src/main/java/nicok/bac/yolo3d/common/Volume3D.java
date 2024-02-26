@@ -13,9 +13,20 @@ import java.util.List;
 public class Volume3D {
 
     private final FloatNdArray data;
+    private final BoundingBox boundingBox;
 
     public Volume3D(int width, int height, int depth) {
         data = NdArrays.ofFloats(Shape.of(1, width, height, depth, 3));
+        boundingBox = new BoundingBox(Point.ZERO, new Point(width, height, depth));
+    }
+
+    public static Volume3D forBoundingBox(final BoundingBox boundingBox) {
+        // TODO: remove + 1?
+        return new Volume3D(
+                (int) Math.ceil(boundingBox.size().x()) + 1,
+                (int) Math.ceil(boundingBox.size().y()) + 1,
+                (int) Math.ceil(boundingBox.size().z()) + 1
+        );
     }
 
     public void set(int x, int y, int z, float r, float g, float b) {
@@ -45,5 +56,9 @@ public class Volume3D {
             }
         }
         return voxels;
+    }
+
+    public BoundingBox boundingBox() {
+        return boundingBox;
     }
 }

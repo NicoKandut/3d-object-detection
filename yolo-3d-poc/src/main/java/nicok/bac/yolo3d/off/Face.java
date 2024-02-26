@@ -6,12 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public record Face(
-        List<Long> vertexIndices
+        List<Integer> vertexIndices
 ) {
     public Point normal(final List<Vertex> vertices) {
-        final var a = vertices.get(vertexIndices().get(0).intValue());
-        final var b = vertices.get(vertexIndices().get(1).intValue());
-        final var c = vertices.get(vertexIndices().get(2).intValue());
+        final var a = vertices.get(vertexIndices().get(0));
+        final var b = vertices.get(vertexIndices().get(1));
+        final var c = vertices.get(vertexIndices().get(2));
 
         final var v1 = new Point(
                 b.x() - a.x(),
@@ -33,7 +33,7 @@ public record Face(
         var zSum = 0.0;
 
         for (final var index : vertexIndices) {
-            final var vertex = vertices.get(index.intValue());
+            final var vertex = vertices.get(index);
             xSum += vertex.x();
             ySum += vertex.y();
             zSum += vertex.z();

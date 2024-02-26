@@ -19,10 +19,9 @@ public class OffAdapter implements InputFile {
     private final List<Face> faces;
     private final BoundingBox boundingBox;
 
-
     public OffAdapter(final String path) throws Exception {
         final var boundingBoxBuilder = new BoundingBox.Builder();
-        try (final var reader = new OffReader(path, 10)) {
+        try (final var reader = new OffReader(path)) {
             final var fileInfo = reader.readHeader();
 
             if (fileInfo.vertexCount() > 1000) {
@@ -65,8 +64,7 @@ public class OffAdapter implements InputFile {
         if (!faces.isEmpty()) {
             faces.stream()
                     .filter(face -> face.vertexIndices().stream()
-                            .mapToInt(Long::intValue)
-                            .mapToObj(vertices::get)
+                            .map(vertices::get)
                             .anyMatch(target::contains)
                     )
                     .forEach(targetFaces::add);
@@ -103,8 +101,6 @@ public class OffAdapter implements InputFile {
 
                         double dist = Point.dot(point, normal) - Point.dot(face.center(vertices), normal);
                         final var projected = Point.sub(point, Point.mul(dist, normal));
-
-
 
 
 //                        if (distance < nearestDistance) {

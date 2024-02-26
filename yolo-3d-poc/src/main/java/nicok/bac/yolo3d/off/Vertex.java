@@ -28,4 +28,12 @@ public record Vertex(
                 d * p.z
         );
     }
+
+    public static Vertex componentWiseMultiply(Vertex a, Vertex b) {
+        return new Vertex(
+                a.x * b.x,
+                a.y * b.y,
+                a.z * b.z
+        );
+    }
 }

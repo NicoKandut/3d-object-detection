@@ -1,5 +1,7 @@
 package nicok.bac.yolo3d.off;
 
+import nicok.bac.yolo3d.preprocessing.PreProcessing;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -9,19 +11,26 @@ import java.util.function.Consumer;
 
 public final class OffReader implements AutoCloseable {
     private final String path;
-    private final double scaling;
     private BufferedReader reader;
     private Header header;
 
     public OffReader(
-            final String path,
-            final double scaling
+            final String path
     ) {
         this.path = Objects.requireNonNull(path);
-        this.scaling = scaling;
     }
 
-    private static <T> void noop(final T ignored) {
+    public OffMesh readMesh(final PreProcessing preProcessing) throws IOException {
+        final var fileInfo = this.readHeader();
+        final var meshBuilder = new OffMesh.Builder(fileInfo.vertexCount(), fileInfo.faceCount());
+
+        this.readVertices(vertex -> {
+            final var transformedVertex = preProcessing.scale(vertex);
+            meshBuilder.addVertex(transformedVertex);
+        });
+        this.readFaces(meshBuilder::addFace);
+
+        return meshBuilder.build();
     }
 
     public Header readHeader() throws IOException {
@@ -35,9 +44,9 @@ public final class OffReader implements AutoCloseable {
         // line 2 - vertexCount faceCount edgeCount
         final var head_line = readIgnoreComments(reader);
         final var head_parts = head_line.split("\\s+");
-        final var vertexCount = Long.parseLong(head_parts[0]);
-        final var faceCount = Long.parseLong(head_parts[1]);
-        final var edgeCount = Long.parseLong(head_parts[2]);
+        final var vertexCount = Integer.parseInt(head_parts[0]);
+        final var faceCount = Integer.parseInt(head_parts[1]);
+        final var edgeCount = Integer.parseInt(head_parts[2]);
 
         header = new Header(vertexCount, faceCount, edgeCount);
 
@@ -51,9 +60,9 @@ public final class OffReader implements AutoCloseable {
         for (var i_vertex = 0; i_vertex < header.vertexCount(); ++i_vertex) {
             final var vertex_line = readIgnoreComments(reader);
             final var vertex_parts = vertex_line.split("\\s+");
-            final var x = scaling * Double.parseDouble(vertex_parts[0]);
-            final var y = scaling * Double.parseDouble(vertex_parts[1]);
-            final var z = scaling * Double.parseDouble(vertex_parts[2]);
+            final var x = Double.parseDouble(vertex_parts[0]);
+            final var y = Double.parseDouble(vertex_parts[1]);
+            final var z = Double.parseDouble(vertex_parts[2]);
 
             if (Objects.nonNull(onVertex)) {
                 onVertex.accept(new Vertex(x, y, z));
@@ -68,11 +77,11 @@ public final class OffReader implements AutoCloseable {
         for (var i_faces = 0; i_faces < header.faceCount(); ++i_faces) {
             final var face_line = readIgnoreComments(reader);
             final var face_parts = face_line.split("\\s+");
-            final var faceVertexIndexCount = Long.parseLong(face_parts[0]);
+            final var faceVertexIndexCount = Integer.parseInt(face_parts[0]);
 
-            final var faceVertexIndices = new ArrayList<Long>();
+            final var faceVertexIndices = new ArrayList<Integer>();
             for (var i_vertex = 1; i_vertex <= faceVertexIndexCount; ++i_vertex) {
-                final var index = Long.parseLong(face_parts[i_vertex]);
+                final var index = Integer.parseInt(face_parts[i_vertex]);
                 faceVertexIndices.add(index);
             }
 

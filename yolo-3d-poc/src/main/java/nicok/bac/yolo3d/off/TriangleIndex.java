@@ -1,8 +1,8 @@
 package nicok.bac.yolo3d.off;
 
 public record TriangleIndex(
-        long index1,
-        long index2,
-        long index3
+        int index1,
+        int index2,
+        int index3
 ) {
 }
