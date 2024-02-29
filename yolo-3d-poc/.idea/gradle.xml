@@ -8,10 +8,10 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/application-prepare-dataset-psb" />
+            <option value="$PROJECT_DIR$/app-stats-dataset-psb" />
+            <option value="$PROJECT_DIR$/app-train" />
+            <option value="$PROJECT_DIR$/app-voxelize" />
             <option value="$PROJECT_DIR$/lib" />
-            <option value="$PROJECT_DIR$/splitting-poc" />
-            <option value="$PROJECT_DIR$/training" />
           </set>
         </option>
       </GradleProjectSettings>

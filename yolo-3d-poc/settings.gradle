@@ -4,6 +4,6 @@ rootProject.name = 'yolo-3d-poc'
 include 'lib'
 
 // separate application and tools
-include 'splitting-poc'
-include 'training'
-include 'application-prepare-dataset-psb'
+include 'app-voxelize'
+include 'app-train'
+include 'app-stats-dataset-psb'
