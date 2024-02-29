@@ -49,5 +49,4 @@ saved_model
 *.zip
 *.h5
 
-off
 poly2vox
