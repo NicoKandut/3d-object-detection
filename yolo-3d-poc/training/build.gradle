@@ -1,0 +1,18 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    implementation project(':lib')
+    implementation 'commons-cli:commons-cli:1.4'
+}
+
+application {
+    mainClass = 'nicok.bac.yolo3d.Main'
+}

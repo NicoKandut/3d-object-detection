@@ -1,0 +1,14 @@
+plugins {
+    id 'java-library'
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    api 'org.tensorflow:tensorflow-core-api:0.5.0'
+    implementation 'org.tensorflow:tensorflow-core-api:0.5.0:linux-x86_64-gpu'
+    implementation 'org.tensorflow:tensorflow-core-api:0.5.0:windows-x86_64-gpu'
+}
