@@ -6,3 +6,4 @@ include 'lib'
 // separate application and tools
 include 'splitting-poc'
 include 'training'
+include 'application-prepare-dataset-psb'

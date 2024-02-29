@@ -8,6 +8,7 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/application-prepare-dataset-psb" />
             <option value="$PROJECT_DIR$/lib" />
             <option value="$PROJECT_DIR$/splitting-poc" />
             <option value="$PROJECT_DIR$/training" />

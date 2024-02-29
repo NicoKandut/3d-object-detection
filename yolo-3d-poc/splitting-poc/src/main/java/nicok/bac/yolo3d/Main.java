@@ -19,14 +19,14 @@ import java.util.stream.IntStream;
 
 public class Main {
 
-    public static final String REPOSITORY_PATH = "C:/src/bac";
+    public static final String REPOSITORY_PATH = "C:/Users/nicok/IdeaProjects/bac";
     public static final String SAVED_MODEL_PATH = REPOSITORY_PATH + "/yolo-3d-poc/saved_model";
     public static final String VOX_PATH = REPOSITORY_PATH + "/dataset-3d-minecraft/test_0.vox";
-    public static final String OFF_PATH = REPOSITORY_PATH + "/yolo-3d-poc/assets/mushroom.off";
+    public static final String OFF_PATH = REPOSITORY_PATH + "/mushroom.off";
 
     public static void main(String[] args) throws Exception {
         final var preprocessing = new PreProcessing.Builder()
-                .scaling(10.0)
+                .scaling(8.0)
                 .build();
         final var inputFile = InputFileProvider.get(OFF_PATH, preprocessing);
 
@@ -35,7 +35,7 @@ public class Main {
         final var ids = IntStream.range(0, 1000).iterator();
         for (final var box : boxes) {
             final var volume = inputFile.read(box);
-            final var filename = "chunk_" + ids.nextInt() + ".vox";
+            final var filename = "mushroom.vox";
             saveVoxFile(filename, volume);
         }
     }
@@ -63,41 +63,41 @@ public class Main {
         final var mid = inputFile.getBoundingBox().center();
         final var max = inputFile.getBoundingBox().max();
 
-        // return List.of(inputFile.getBoundingBox());
-        return List.of(
-                new BoundingBox(
-                        min,
-                        mid
-                ),
-                new BoundingBox(
-                        new Point(min.x(), min.y(), mid.z()),
-                        new Point(mid.x(), mid.y(), max.z())
-                ),
-                new BoundingBox(
-                        new Point(min.x(), mid.y(), min.z()),
-                        new Point(mid.x(), max.y(), mid.z())
-                ),
-                new BoundingBox(
-                        new Point(mid.x(), min.y(), min.z()),
-                        new Point(max.x(), mid.y(), mid.z())
-                ),
-                new BoundingBox(
-                        new Point(mid.x(), mid.y(), min.z()),
-                        new Point(max.x(), max.y(), mid.z())
-                ),
-                new BoundingBox(
-                        new Point(mid.x(), min.y(), mid.z()),
-                        new Point(max.x(), mid.y(), max.z())
-                ),
-                new BoundingBox(
-                        new Point(min.x(), mid.y(), mid.z()),
-                        new Point(mid.x(), max.y(), max.z())
-                ),
-                new BoundingBox(
-                        mid,
-                        max
-                )
-        );
+         return List.of(inputFile.getBoundingBox());
+//        return List.of(
+//                new BoundingBox(
+//                        min,
+//                        mid
+//                ),
+//                new BoundingBox(
+//                        new Point(min.x(), min.y(), mid.z()),
+//                        new Point(mid.x(), mid.y(), max.z())
+//                ),
+//                new BoundingBox(
+//                        new Point(min.x(), mid.y(), min.z()),
+//                        new Point(mid.x(), max.y(), mid.z())
+//                ),
+//                new BoundingBox(
+//                        new Point(mid.x(), min.y(), min.z()),
+//                        new Point(max.x(), mid.y(), mid.z())
+//                ),
+//                new BoundingBox(
+//                        new Point(mid.x(), mid.y(), min.z()),
+//                        new Point(max.x(), max.y(), mid.z())
+//                ),
+//                new BoundingBox(
+//                        new Point(mid.x(), min.y(), mid.z()),
+//                        new Point(max.x(), mid.y(), max.z())
+//                ),
+//                new BoundingBox(
+//                        new Point(min.x(), mid.y(), mid.z()),
+//                        new Point(mid.x(), max.y(), max.z())
+//                ),
+//                new BoundingBox(
+//                        mid,
+//                        max
+//                )
+//        );
     }
 
     private static void saveVoxFile(String filename, Volume3D volume) {

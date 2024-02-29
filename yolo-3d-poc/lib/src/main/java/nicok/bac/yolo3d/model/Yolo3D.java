@@ -29,10 +29,10 @@ public class Yolo3D {
 
     public Yolo3D() {
         this.savedModel = SavedModelBundle.load(SAVED_MODEL_PATH);
-
-        final var optimizer = new Adam(graph, 0.001f, 0.9f, 0.999f, 1e-8f);
-
-        optimizer.minimize(loss, TRAIN);
+//
+//        final var optimizer = new Adam(graph, 0.001f, 0.9f, 0.999f, 1e-8f);
+//
+//        optimizer.minimize(loss, TRAIN);
     }
 
     public Graph graph() {
