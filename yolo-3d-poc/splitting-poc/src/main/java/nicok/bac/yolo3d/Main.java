@@ -10,6 +10,7 @@ import nicok.bac.yolo3d.common.Point;
 import nicok.bac.yolo3d.common.Volume3D;
 import nicok.bac.yolo3d.inputfile.InputFile;
 import nicok.bac.yolo3d.inputfile.InputFileProvider;
+import nicok.bac.yolo3d.off.Vertex;
 import nicok.bac.yolo3d.preprocessing.PreProcessing;
 
 import java.io.FileOutputStream;
@@ -26,7 +27,9 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
         final var preprocessing = new PreProcessing.Builder()
-                .scaling(8.0)
+                .rotate(0.1, 0.2,0.5)
+                .shift(new Vertex(10, 5, -2))
+                .scaling(6.0)
                 .build();
         final var inputFile = InputFileProvider.get(OFF_PATH, preprocessing);
 

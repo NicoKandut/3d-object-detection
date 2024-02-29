@@ -25,7 +25,7 @@ public final class OffReader implements AutoCloseable {
         final var meshBuilder = new OffMesh.Builder(fileInfo.vertexCount(), fileInfo.faceCount());
 
         this.readVertices(vertex -> {
-            final var tv = preProcessing.scale(vertex);
+            final var tv = preProcessing.apply(vertex);
             meshBuilder.addVertex(new Vertex(tv.x(), tv.z(), tv.y()));
         });
         this.readFaces(meshBuilder::addFace);
