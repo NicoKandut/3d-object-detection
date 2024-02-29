@@ -12,24 +12,4 @@ try out uniform feature extractors
 
 test on empty data
 test with noise data
-use rgba?
-use single value? (maybe even boolean)
-off voxelization?
 off voxelization for empty/full chunks? skip them completely?
-
-
-
-
-
-FOR PRINCTON SHAPE BENCHMARK
-
-https://segeval.cs.princeton.edu/
-Citation
-If you use any part of this benchmark, please cite:
-Xiaobai Chen, Aleksey Golovinskiy, and Thomas Funkhouser,
-A Benchmark for 3D Mesh Segmentation
-ACM Transactions on Graphics (Proc. SIGGRAPH), 28(3), 2009. [BibTex].Citation
-If you use any part of this benchmark, please cite:
-Xiaobai Chen, Aleksey Golovinskiy, and Thomas Funkhouser,
-A Benchmark for 3D Mesh Segmentation
-ACM Transactions on Graphics (Proc. SIGGRAPH), 28(3), 2009. [BibTex].

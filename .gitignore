@@ -1,6 +1,1 @@
-dataset-3d-minecraft/
-dataset-3d-minecraft-1k/
-dataset-3d-minecraft-50k/
-dataset-3d-minecraft-100k/
-*.hdf5
-*.class
+__pycache__

@@ -23,23 +23,22 @@ public class OffAdapter2 implements InputFile {
     ) throws Exception {
         try (final var reader = new OffReader(path)) {
             mesh = reader.readMesh(preProcessing);
-            System.out.println("indexed mesh: " + mesh.vertices().size() + " vertices, " + mesh.faces().size() + " faces");
+//            System.out.println("indexed mesh: " + mesh.vertices().size() + " vertices, " + mesh.faces().size() + " faces");
 
             final var triangleMesh = MeshConverter.getTriangleMesh(mesh);
-            System.out.println("triangles: " + triangleMesh.triangles().size());
+//            System.out.println("triangles: " + triangleMesh.triangles().size());
 
             triangleEvents = triangleMesh.getEvents().stream()
                     .sorted(Comparator.comparing(VertexMesh.TriangleEvent::z))
                     .toList();
 
-            System.out.println("Starting with " + triangleEvents.size() + " events");
+//            System.out.println("Starting with " + triangleEvents.size() + " events");
         }
     }
 
 
     @Override
     public Volume3D read(final BoundingBox target) {
-        System.out.printf("Reading %s\n", target);
         final var voxelSize = 0.05;
         return Voxelizer.voxelize(triangleEvents, voxelSize, target);
     }

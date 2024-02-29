@@ -2,6 +2,8 @@ package nicok.bac.yolo3d.inputfile;
 
 import nicok.bac.yolo3d.preprocessing.PreProcessing;
 
+import static nicok.bac.yolo3d.util.DirectoryUtil.getExtension;
+
 public final class InputFileProvider {
 
     public static InputFile get(
@@ -16,16 +18,6 @@ public final class InputFileProvider {
             case "obj" -> null;
             default -> throw new IllegalExtensionException(extension);
         };
-    }
-
-    private static String getExtension(final String path) {
-        final var parts = path.split("\\.");
-
-        if (parts.length < 2) {
-            throw new IllegalPathException(path);
-        }
-
-        return parts[parts.length - 1];
     }
 
     private InputFileProvider() {

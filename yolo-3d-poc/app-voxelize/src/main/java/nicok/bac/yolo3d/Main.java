@@ -1,47 +1,106 @@
 package nicok.bac.yolo3d;
 
-import com.scs.voxlib.VoxFile;
-import com.scs.voxlib.VoxWriter;
-import com.scs.voxlib.chunk.VoxRootChunk;
-import com.scs.voxlib.chunk.VoxSizeChunk;
-import com.scs.voxlib.chunk.VoxXYZIChunk;
 import nicok.bac.yolo3d.common.BoundingBox;
 import nicok.bac.yolo3d.common.Point;
-import nicok.bac.yolo3d.common.Volume3D;
 import nicok.bac.yolo3d.inputfile.InputFile;
 import nicok.bac.yolo3d.inputfile.InputFileProvider;
 import nicok.bac.yolo3d.off.Vertex;
 import nicok.bac.yolo3d.preprocessing.PreProcessing;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Options;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.IntStream;
+
+import static java.util.Objects.requireNonNull;
+import static nicok.bac.yolo3d.util.CommandLineUtil.parseCommandLine;
+import static nicok.bac.yolo3d.util.DirectoryUtil.getFilename;
+import static nicok.bac.yolo3d.util.DirectoryUtil.getRepositoryRoot;
+import static nicok.bac.yolo3d.vox.VoxFileUtil.saveVoxFile;
 
 public class Main {
+    public static final Options OPTIONS = new Options()
+            .addRequiredOption("i", "input", true, "Input file.")
+            .addRequiredOption("o", "output", true, "Output file.")
+            .addOption("s", "split", true, "Split the model into equal boxes along each axis");
 
-    public static final String REPOSITORY_PATH = "C:/Users/nicok/IdeaProjects/bac";
-    public static final String SAVED_MODEL_PATH = REPOSITORY_PATH + "/yolo-3d-poc/saved_model";
-    public static final String VOX_PATH = REPOSITORY_PATH + "/dataset-3d-minecraft/test_0.vox";
-    public static final String OFF_PATH = REPOSITORY_PATH + "/mushroom.off";
+    /**
+     * Usage: :app-voxelize:run --args='-i path/to/file.off -o path/to/output/dir'
+     */
 
     public static void main(String[] args) throws Exception {
-        final var preprocessing = new PreProcessing.Builder()
-                .rotate(0.1, 0.2,0.5)
-                .shift(new Vertex(10, 5, -2))
-                .scaling(6.0)
-                .build();
-        final var inputFile = InputFileProvider.get(OFF_PATH, preprocessing);
+        final var commandLine = parseCommandLine(args, OPTIONS);
+        final var inputPath = commandLine.getOptionValue("input");
+        final var outputPath = commandLine.getOptionValue("output");
+        final var splitSize = getSplitSize(commandLine);
 
-        // save chunks
-        final var boxes = getBoundingBoxes(inputFile);
-        final var ids = IntStream.range(0, 1000).iterator();
-        for (final var box : boxes) {
+        requireNonNull(inputPath);
+        requireNonNull(outputPath);
+
+        final var preprocessing = new PreProcessing.Builder()
+//                .rotate(0.1, 0.2, 0.5)
+                .scaling(12.0)
+                .build();
+        final var inputFile = InputFileProvider.get(inputPath, preprocessing);
+        final var inputFileName = getFilename(inputPath);
+        System.out.printf("File bounds: %s\n", inputFile.getBoundingBox().size());
+
+        final var boxes = getBoundingBoxes(inputFile, splitSize);
+        System.out.printf("Splitting will generate %d boxes\n", boxes.size());
+
+        System.out.println("Saving VOX files:");
+        for (int i = 0; i < boxes.size(); i++) {
+            final var box = boxes.get(i);
+
+            final var filename = boxes.size() > 1
+                    ? outputPath + "/" + inputFileName + "_" + i + ".vox"
+                    : outputPath + "/" + inputFileName + ".vox";
+
             final var volume = inputFile.read(box);
-            final var filename = "mushroom.vox";
+            System.out.printf("  Saving to %s\n", filename);
             saveVoxFile(filename, volume);
         }
+
+        System.out.println("DONE");
     }
+
+    private static int getSplitSize(CommandLine commandLine) {
+        try {
+            return Integer.parseInt(commandLine.getOptionValue("split"));
+        } catch (final NumberFormatException ignored) {
+            return 1;
+        }
+    }
+
+    private static List<BoundingBox> getBoundingBoxes(
+            final InputFile inputFile,
+            final int splits
+    ) {
+        final var min = inputFile.getBoundingBox().min();
+        final var step = Point.mul(1.0 / (double) splits, inputFile.getBoundingBox().size());
+        final var boxes = new ArrayList<BoundingBox>();
+
+        for (int z = 0; z < splits; z++) {
+            for (int y = 0; y < splits; y++) {
+                for (int x = 0; x < splits; x++) {
+                    final var offset = new Point(
+                            x * step.x(),
+                            y * step.y(),
+                            z * step.z()
+                    );
+                    final var from = Point.add(min, offset);
+                    final var to = Point.add(from, step);
+                    final var box = new BoundingBox(from, to);
+
+                    boxes.add(box);
+                }
+            }
+        }
+
+        return boxes;
+    }
+}
+
 
 //    public static void main(String[] args) throws IOException {
 //        System.out.printf("Using TensorFlow %s\n", TensorFlow.version());
@@ -60,13 +119,6 @@ public class Main {
 //        }
 //    }
 
-
-    private static List<BoundingBox> getBoundingBoxes(InputFile inputFile) {
-        final var min = inputFile.getBoundingBox().min();
-        final var mid = inputFile.getBoundingBox().center();
-        final var max = inputFile.getBoundingBox().max();
-
-         return List.of(inputFile.getBoundingBox());
 //        return List.of(
 //                new BoundingBox(
 //                        min,
@@ -101,25 +153,3 @@ public class Main {
 //                        max
 //                )
 //        );
-    }
-
-    private static void saveVoxFile(String filename, Volume3D volume) {
-        try (final var writer = new VoxWriter(new FileOutputStream(filename))) {
-            final var root = new VoxRootChunk();
-
-            final var size = volume.boundingBox().size();
-            final var sizeChunk = new VoxSizeChunk((int) Math.ceil(size.x()), (int) Math.ceil(size.y()), (int) Math.ceil(size.z()));
-            root.appendChunk(sizeChunk);
-
-            final var voxels = volume.toVoxels();
-            final var chunk = new VoxXYZIChunk(voxels);
-            root.appendChunk(chunk);
-
-            System.out.println("Saving to " + filename);
-
-            writer.write(new VoxFile(VoxWriter.VERSION, root));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-}

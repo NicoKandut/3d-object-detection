@@ -22,8 +22,6 @@ public class Voxelizer {
                 Point.mul(1 / voxelSize, target.max())
         );
 
-        System.out.printf("Creating volume:\n  - mesh bounds: %s\n  - volume bounds: %s\n", target.size(), boundingBox.size());
-
 //        final var voxelSizeHalf = voxelSize / 2; // TODO: sample at center of voxel?
 
         final var lines = new ArrayList<VertexMesh.Line>();

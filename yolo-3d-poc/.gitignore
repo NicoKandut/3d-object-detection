@@ -37,15 +37,5 @@ build/
 ### Mac OS ###
 .DS_Store
 
-__pycache__
-
-saved_model
-
-*.vox
-*.hdf5
-*.cfg
-*.weights
-*.zip
-*.h5
-
-poly2vox
+### gradle ###
+.gradle

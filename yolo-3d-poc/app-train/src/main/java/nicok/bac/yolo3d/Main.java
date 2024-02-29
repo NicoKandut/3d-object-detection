@@ -2,6 +2,7 @@ package nicok.bac.yolo3d;
 
 import nicok.bac.yolo3d.dataset.PrincetonShapeBenchmark;
 import nicok.bac.yolo3d.model.Yolo3D;
+import nicok.bac.yolo3d.util.CommandLineUtil;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
@@ -9,6 +10,7 @@ import org.apache.commons.cli.ParseException;
 import org.tensorflow.types.TFloat32;
 
 import static nicok.bac.yolo3d.model.Yolo3D.INPUT_NAME;
+import static nicok.bac.yolo3d.util.CommandLineUtil.parseCommandLine;
 
 public final class Main {
 
@@ -18,7 +20,7 @@ public final class Main {
             .addOption("e", "epochs", true, "Number of training epochs");
 
     public static void main(final String[] args) throws Exception {
-        final var commandLine = parseCommandLine(args);
+        final var commandLine = parseCommandLine(args, OPTIONS);
         final var epochs = getEpochs(commandLine);
 
         final var dataset = new PrincetonShapeBenchmark();
@@ -53,17 +55,6 @@ public final class Main {
             System.err.println("Error: " + e.getMessage());
             System.exit(1);
             return 1;
-        }
-    }
-
-    private static CommandLine parseCommandLine(final String[] args) {
-        final var parser = new DefaultParser();
-        try {
-            return parser.parse(OPTIONS, args);
-        } catch (final ParseException e) {
-            System.err.println("Error: " + e.getMessage());
-            System.exit(1);
-            return null;
         }
     }
 }
