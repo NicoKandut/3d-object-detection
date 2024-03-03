@@ -3,7 +3,6 @@ package nicok.bac.yolo3d.voxelization;
 import nicok.bac.yolo3d.common.BoundingBox;
 import nicok.bac.yolo3d.common.Point;
 import nicok.bac.yolo3d.common.Volume3D;
-import nicok.bac.yolo3d.off.Vertex;
 import nicok.bac.yolo3d.off.VertexMesh;
 
 import java.util.ArrayList;
@@ -11,6 +10,9 @@ import java.util.Comparator;
 import java.util.List;
 
 public class Voxelizer {
+
+    public record PointX(double x, double normal) {
+    }
 
     public static Volume3D voxelize(
             List<VertexMesh.TriangleEvent> triangleEvents,
@@ -22,18 +24,17 @@ public class Voxelizer {
                 Point.mul(1 / voxelSize, target.max())
         );
 
-//        final var voxelSizeHalf = voxelSize / 2; // TODO: sample at center of voxel?
-
         final var lines = new ArrayList<VertexMesh.Line>();
         final var volume = Volume3D.forBoundingBox(boundingBox);
 
         // scan over mesh in z direction
+        final var halfVoxel = voxelSize / 2.0;
         var volZ = 0;
-        for (var z = target.min().z(); z < target.max().z(); z += voxelSize) {
+        for (var z = target.min().z() + halfVoxel; z < target.max().z(); z += voxelSize) {
             // process events
             final var currentZ = z;
             final var newEvents = triangleEvents.stream()
-                    .takeWhile(event -> event.z() < currentZ)
+                    .takeWhile(event -> event.z() <= currentZ)
                     .toList();
             triangleEvents = triangleEvents.subList(newEvents.size(), triangleEvents.size());
 
@@ -51,25 +52,41 @@ public class Voxelizer {
                     .toList();
 
             var volY = 0;
-            for (var y = target.min().y(); y < target.max().y(); y += voxelSize) {
+            for (var y = target.min().y() + halfVoxel; y < target.max().y(); y += voxelSize) {
                 final var currentY = y;
                 final var pointsAtY = linesAtZ.stream()
-                        .filter(line -> line.v1().y() <= currentY && line.v2().y() > currentY ||
-                                line.v2().y() <= currentY && line.v1().y() > currentY)
+                        .filter(line -> line.v1().y() <= currentY && line.v2().y() >= currentY ||
+                                line.v2().y() <= currentY && line.v1().y() >= currentY)
                         .map(line -> line.atY(currentY))
-                        .sorted(Comparator.comparing(Vertex::x))
+                        .sorted(Comparator.comparing(PointX::x))
                         .toList();
-                var filled = false;
+
+//                if (pointsAtY.size() % 2 == 1) {
+//                    System.out.println("Warning: uneven number of points will cause artifacts. y=" + volY + ", z=" + volZ);
+//                }
+
+                var fillDepth = 0;
                 var volX = 0;
                 var pointIndex = 0;
-                for (var x = target.min().x(); x < target.max().x(); x += voxelSize) {
+                for (var x = target.min().x() + halfVoxel; x < target.max().x(); x += voxelSize) {
+                    var override = false;
                     while (pointIndex < pointsAtY.size() && pointsAtY.get(pointIndex).x() < x) {
-                        filled = !filled;
-                        ++pointIndex;
+                        override = true;
+                        final var normal = pointsAtY.get(pointIndex).normal();
+                        if (normal < 0) {
+                            fillDepth += 1;
+                        }
+
+                        if (normal > 0) {
+                            fillDepth -= 1;
+                        }
+
+                        pointIndex++;
                     }
 
-                    if (filled) {
-                        volume.set(volX, volY, volZ, 1, 1, 1);
+                    // filled for large bodies, pointsInPixel for more solid surfaces
+                    if (fillDepth > 0 || override) {
+                        volume.set(volX, volY, volZ, true);
                     }
                     ++volX;
                 }

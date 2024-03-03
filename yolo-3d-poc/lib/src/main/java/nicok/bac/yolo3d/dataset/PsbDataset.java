@@ -20,29 +20,21 @@ public class PsbDataset {
     private final List<Label> trainLabels = new ArrayList<>();
     private final List<Model> testModels = new ArrayList<>();
     private final List<Label> testLabels = new ArrayList<>();
-
-    public PsbDataset withTrainClaFile(final String path) throws IOException {
-        scanClaFile(path, trainModels, trainLabels);
-        return this;
-    }
-
-    public PsbDataset withTestClaFile(final String path) throws IOException {
-        scanClaFile(path, testModels, testLabels);
-        return this;
-    }
+    private String path;
 
     public PsbDataset withPath(final String path) throws IOException {
-        withTrainClaFile(path + CLA_TRAIN);
-        withTestClaFile(path + CLA_TEST);
+        this.path = path;
+        scanClaFile(this.path + CLA_TRAIN, trainModels, trainLabels);
+        scanClaFile(this.path + CLA_TEST, testModels, testLabels);
         return this;
     }
 
     private void scanClaFile(
-            final String path,
+            final String claPath,
             final List<Model> models,
             final List<Label> labels
     ) throws IOException {
-        final var file = new File(path);
+        final var file = new File(claPath);
         try (final var reader = new BufferedReader(new FileReader(file))) {
             Category currentCategory = null;
             for (final var line : reader.lines().skip(3).filter(Predicate.not(String::isBlank)).map(String::trim).toList()) {
@@ -72,7 +64,7 @@ public class PsbDataset {
                 if (line.matches("\\d+")) {
                     final var id = Integer.parseInt(line);
                     final var subFolder = id / 100;
-                    final var modelPath = path + "/db/" + subFolder + "/m" + id + "/m" + id + ".off";
+                    final var modelPath = this.path + "/db/" + subFolder + "/m" + id + "/m" + id + ".off";
                     models.add(new Model(id, modelPath));
                     labels.add(new Label(id, requireNonNull(currentCategory).id()));
                 }

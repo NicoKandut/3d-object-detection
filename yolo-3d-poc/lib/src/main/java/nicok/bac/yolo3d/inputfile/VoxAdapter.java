@@ -6,6 +6,7 @@ import com.scs.voxlib.Voxel;
 import nicok.bac.yolo3d.common.BoundingBox;
 import nicok.bac.yolo3d.common.Point;
 import nicok.bac.yolo3d.common.Volume3D;
+import nicok.bac.yolo3d.preprocessing.Transformation;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -14,9 +15,9 @@ import java.util.List;
 
 public class VoxAdapter implements InputFile {
 
-    private final List<Voxel> voxels;
+    private List<Voxel> voxels;
     private final int[] palette;
-    private final BoundingBox boundingBox;
+    private BoundingBox boundingBox;
 
 
     public VoxAdapter(final String path) throws IOException {
@@ -47,10 +48,17 @@ public class VoxAdapter implements InputFile {
                     final var x = v.getPosition().y - (int) target.min().y();
                     final var y = (int) target.size().z() - (v.getPosition().z % (int) target.size().z()) - 1;
                     final var z = v.getPosition().x - (int) target.min().x();
-                    volume.set(x, y, z, r, g, b);
+                    volume.set(x, y, z, true);
                 });
 
         return volume;
+    }
+
+    @Override
+    public InputFile withPreprocessing(final Transformation preProcessing) {
+        this.voxels = this.voxels.stream().map(preProcessing::apply).toList();
+        this.boundingBox = preProcessing.apply(this.boundingBox);
+        return this;
     }
 
     @Override

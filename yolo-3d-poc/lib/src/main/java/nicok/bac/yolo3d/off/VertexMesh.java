@@ -1,20 +1,24 @@
 package nicok.bac.yolo3d.off;
 
+import nicok.bac.yolo3d.voxelization.Voxelizer;
+
 import java.util.List;
 import java.util.stream.Stream;
 
 public record VertexMesh(List<TriangleVertex> triangles) {
 
-    public static record Line2D(Vertex v1, Vertex v2) {
+    public static record Line2D(Vertex v1, Vertex v2, Vertex normal) {
 
-        public Vertex atY(final double currentY) {
+        public Voxelizer.PointX atY(final double currentY) {
             final var smallerY = v1.y() < v2.y() ? v1 : v2;
             final var biggerY = v1.y() < v2.y() ? v2 : v1;
             final var total = biggerY.y() - smallerY.y();
             final var current = currentY - smallerY.y();
             final var ratio = current / total;
             final var diff = Vertex.sub(biggerY, smallerY);
-            return Vertex.add(smallerY, Vertex.mul(ratio, diff));
+            final var result = Vertex.add(smallerY, Vertex.mul(ratio, diff));
+
+            return new Voxelizer.PointX(result.x(), normal.x());
         }
     }
 
@@ -25,13 +29,15 @@ public record VertexMesh(List<TriangleVertex> triangles) {
         public Vertex mid;
         public Vertex d3;
         public Vertex target;
+        private final Vertex normal;
 
         public boolean isUpperHalf = false;
 
-        public Line(final Vertex origin, final Vertex mid, final Vertex target) {
+        public Line(final Vertex origin, final Vertex mid, final Vertex target, final Vertex normal) {
             this.origin = origin;
             this.mid = mid;
             this.target = target;
+            this.normal = normal;
             this.d1 = Vertex.sub(target, origin);
             this.d2 = Vertex.sub(mid, origin);
             this.d3 = Vertex.sub(target, mid);
@@ -66,7 +72,8 @@ public record VertexMesh(List<TriangleVertex> triangles) {
 //                    throw new IllegalStateException("Expected " + z + ", got " + v2.z());
                 return new Line2D(
                         v1,
-                        v2
+                        v2,
+                        normal
                 );
             } else {
                 assert (!isUpperHalf);
@@ -89,7 +96,8 @@ public record VertexMesh(List<TriangleVertex> triangles) {
 //                    throw new IllegalStateException("Expected " + z + ", got " + v2.z());
                 return new Line2D(
                         v1,
-                        v2
+                        v2,
+                        normal
                 );
             }
         }
@@ -111,7 +119,8 @@ public record VertexMesh(List<TriangleVertex> triangles) {
                     var line = new Line(
                             vertices.get(0),
                             vertices.get(1),
-                            vertices.get(2)
+                            vertices.get(2),
+                            triangle.normal()
                     );
                     return Stream.of(
                             new TriangleEvent(vertices.get(0).z(), EventType.BEGIN, line),

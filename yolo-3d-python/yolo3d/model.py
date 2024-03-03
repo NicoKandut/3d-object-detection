@@ -4,8 +4,10 @@ from keras.layers import Conv3D, MaxPooling3D, Flatten, Dense, LeakyReLU
 from keras.regularizers import l2
 import keras.backend as K
 
+
 def input_shape():
-    return (28, 28, 28, 1)
+    size = 224
+    return (size, size, size, 1)
 
 class Yolo_Reshape(Layer):
     def __init__(self, target_shape, **kwargs):
@@ -54,6 +56,10 @@ def pool_layer(x):
 
 def model_tiny_yolov1(inputs, num_classes=2, pooling_layers=2, output_size=7):
     x = inputs
+
+    if pooling_layers >= 7:
+        x = conv_layer('7', x, 8)
+        x = pool_layer(x)
 
     if pooling_layers >= 6:
         x = conv_layer('6', x, 16)

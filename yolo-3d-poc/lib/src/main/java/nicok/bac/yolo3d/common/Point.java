@@ -73,4 +73,12 @@ public record Point(double x, double y, double z) {
                 v1.x() * v2.y() - v1.y() * v2.x()
         );
     }
+
+    public  static Point round(final Point point) {
+        return new Point(
+                Math.round(point.x()),
+                Math.round(point.y()),
+                Math.round(point.z())
+        );
+    }
 }

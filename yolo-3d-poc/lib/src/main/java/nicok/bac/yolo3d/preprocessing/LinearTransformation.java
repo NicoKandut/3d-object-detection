@@ -7,9 +7,10 @@ import org.apache.commons.math3.linear.RealMatrix;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 
-public record PreProcessing(
+public record LinearTransformation(
         double[][] transformation
-) {
+) implements Transformation {
+
     public Vertex apply(final Vertex vertex) {
         final var vector = MatrixUtils.createRealMatrix(new double[][]{
                 {vertex.x()},
@@ -28,12 +29,6 @@ public record PreProcessing(
                 transformed[2]
         );
     }
-
-// TODO: better transformation with matrices
-
-//    public Vertex switchYzAxis(final Vertex vertex) {
-//        return new Vertex(vertex.x(), vertex.z(), vertex.y());
-//    }
 
     public static class Builder {
         private RealMatrix scale = MatrixUtils.createRealMatrix(
@@ -91,7 +86,7 @@ public record PreProcessing(
             return this;
         }
 
-        public PreProcessing build() {
+        public LinearTransformation build() {
             final var scaleRot = scale.multiply(rot).getData();
             final var transform = new double[][]{
                     {scaleRot[0][0], scaleRot[0][1], scaleRot[0][2], shift.x()},
@@ -100,7 +95,7 @@ public record PreProcessing(
                     {0, 0, 0, 1}
             };
 
-            return new PreProcessing(transform);
+            return new LinearTransformation(transform);
         }
     }
 }

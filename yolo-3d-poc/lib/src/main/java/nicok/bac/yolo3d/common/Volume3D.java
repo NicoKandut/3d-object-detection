@@ -2,41 +2,39 @@ package nicok.bac.yolo3d.common;
 
 import com.scs.voxlib.Voxel;
 import org.tensorflow.Tensor;
-import org.tensorflow.ndarray.FloatNdArray;
+import org.tensorflow.ndarray.BooleanNdArray;
 import org.tensorflow.ndarray.NdArrays;
 import org.tensorflow.ndarray.Shape;
-import org.tensorflow.types.TFloat32;
+import org.tensorflow.types.TBool;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Volume3D {
 
-    private final FloatNdArray data;
+    private final BooleanNdArray data;
     private final BoundingBox boundingBox;
 
     public Volume3D(int width, int height, int depth) {
-        data = NdArrays.ofFloats(Shape.of(1, width, height, depth, 3));
+        data = NdArrays.ofBooleans(Shape.of(1, width, height, depth, 1));
         boundingBox = new BoundingBox(Point.ZERO, new Point(width, height, depth));
     }
 
     public static Volume3D forBoundingBox(final BoundingBox boundingBox) {
-        // TODO: remove + 1?
+        final var size = Point.round(boundingBox.size());
         return new Volume3D(
-                (int) Math.ceil(boundingBox.size().x()) + 1,
-                (int) Math.ceil(boundingBox.size().y()) + 1,
-                (int) Math.ceil(boundingBox.size().z()) + 1
+                (int) size.x(),
+                (int) size.y(),
+                (int) size.z()
         );
     }
 
-    public void set(int x, int y, int z, float r, float g, float b) {
-        data.setFloat(r, 0, x, y, z, 0);
-        data.setFloat(g, 0, x, y, z, 1);
-        data.setFloat(b, 0, x, y, z, 2);
+    public void set(int x, int y, int z, boolean value) {
+        data.setBoolean(value, 0, x, y, z, 0);
     }
 
     public Tensor toTensor() {
-        return TFloat32.tensorOf(data);
+        return TBool.tensorOf(data);
     }
 
     public List<Voxel> toVoxels() {
@@ -44,12 +42,9 @@ public class Volume3D {
         for (var i = 0; i < data.shape().get(1); ++i) {
             for (var j = 0; j < data.shape().get(2); ++j) {
                 for (var k = 0; k < data.shape().get(3); ++k) {
-                    final var value = data.get(0, i, j, k);
-                    final var r = value.getFloat(0);
-                    final var g = value.getFloat(1);
-                    final var b = value.getFloat(2);
+                    final var value = data.getBoolean(0, i, j, k, 0);
 
-                    if (r + g + b > 0) {
+                    if (value) {
                         voxels.add(new Voxel(i, j, k, (byte) 80));
                     }
                 }

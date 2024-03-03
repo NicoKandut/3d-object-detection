@@ -4,8 +4,7 @@ import nicok.bac.yolo3d.common.BoundingBox;
 import nicok.bac.yolo3d.common.Point;
 import nicok.bac.yolo3d.inputfile.InputFile;
 import nicok.bac.yolo3d.inputfile.InputFileProvider;
-import nicok.bac.yolo3d.off.Vertex;
-import nicok.bac.yolo3d.preprocessing.PreProcessing;
+import nicok.bac.yolo3d.preprocessing.LinearTransformation;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 
@@ -15,7 +14,6 @@ import java.util.List;
 import static java.util.Objects.requireNonNull;
 import static nicok.bac.yolo3d.util.CommandLineUtil.parseCommandLine;
 import static nicok.bac.yolo3d.util.DirectoryUtil.getFilename;
-import static nicok.bac.yolo3d.util.DirectoryUtil.getRepositoryRoot;
 import static nicok.bac.yolo3d.vox.VoxFileUtil.saveVoxFile;
 
 public class Main {
@@ -37,7 +35,7 @@ public class Main {
         requireNonNull(inputPath);
         requireNonNull(outputPath);
 
-        final var preprocessing = new PreProcessing.Builder()
+        final var preprocessing = new LinearTransformation.Builder()
 //                .rotate(0.1, 0.2, 0.5)
                 .scaling(12.0)
                 .build();

@@ -1,7 +1,5 @@
 package nicok.bac.yolo3d.off;
 
-import nicok.bac.yolo3d.preprocessing.PreProcessing;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -20,14 +18,11 @@ public final class OffReader implements AutoCloseable {
         this.path = Objects.requireNonNull(path);
     }
 
-    public OffMesh readMesh(final PreProcessing preProcessing) throws IOException {
+    public OffMesh readMesh() throws IOException {
         final var fileInfo = this.readHeader();
         final var meshBuilder = new OffMesh.Builder(fileInfo.vertexCount(), fileInfo.faceCount());
 
-        this.readVertices(vertex -> {
-            final var tv = preProcessing.apply(vertex);
-            meshBuilder.addVertex(new Vertex(tv.x(), tv.z(), tv.y()));
-        });
+        this.readVertices(v -> meshBuilder.addVertex(new Vertex(v.x(), v.z(), v.y())));
         this.readFaces(meshBuilder::addFace);
 
         return meshBuilder.build();
