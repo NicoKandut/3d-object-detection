@@ -20,11 +20,7 @@ public class OffAdapter2 implements InputFile {
     public OffAdapter2(final String path) throws Exception {
         try (final var reader = new OffReader(path)) {
             mesh = reader.readMesh();
-//            System.out.println("indexed mesh: " + mesh.vertices().size() + " vertices, " + mesh.faces().size() + " faces");
-
             triangleEvents = getTriangleEvents();
-
-//            System.out.println("Starting with " + triangleEvents.size() + " events");
         }
     }
 

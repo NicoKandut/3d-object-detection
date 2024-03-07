@@ -1,28 +1,39 @@
 package nicok.bac.yolo3d.off;
 
+import nicok.bac.yolo3d.util.ThrowingConsumer;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
-import java.util.function.Consumer;
+import java.util.StringTokenizer;
+
+import static java.util.Objects.requireNonNull;
 
 public final class OffReader implements AutoCloseable {
+
+    public static final String DELIMITER = " \n\t";
+
     private final String path;
     private BufferedReader reader;
     private Header header;
 
-    public OffReader(
-            final String path
-    ) {
-        this.path = Objects.requireNonNull(path);
+    public OffReader(final String path) {
+        this.path = requireNonNull(path);
     }
 
+    /**
+     * Reads the entire file into an OffMesh object.
+     *
+     * @return a fully populated OffMesh
+     * @throws IOException when an underlying I/O operation fails
+     */
     public OffMesh readMesh() throws IOException {
         final var fileInfo = this.readHeader();
         final var meshBuilder = new OffMesh.Builder(fileInfo.vertexCount(), fileInfo.faceCount());
 
-        this.readVertices(v -> meshBuilder.addVertex(new Vertex(v.x(), v.z(), v.y())));
+        this.readVertices(meshBuilder::addVertex);
         this.readFaces(meshBuilder::addFace);
 
         return meshBuilder.build();
@@ -31,6 +42,7 @@ public final class OffReader implements AutoCloseable {
     public Header readHeader() throws IOException {
         reader = new BufferedReader(new FileReader(path));
 
+        // line 1 - OFF
         final var off_line = readIgnoreComments(reader);
         if (!Objects.equals(off_line, "OFF")) {
             throw new IllegalStateException(".off files should start with OFF");
@@ -38,58 +50,46 @@ public final class OffReader implements AutoCloseable {
 
         // line 2 - vertexCount faceCount edgeCount
         final var head_line = readIgnoreComments(reader);
-        final var head_parts = head_line.split("\\s+");
-        final var vertexCount = Integer.parseInt(head_parts[0]);
-        final var faceCount = Integer.parseInt(head_parts[1]);
-        final var edgeCount = Integer.parseInt(head_parts[2]);
+        final var tokenStream = new StringTokenizer(head_line, DELIMITER);
+        final var vertexCount = Integer.parseInt(tokenStream.nextToken());
+        final var faceCount = Integer.parseInt(tokenStream.nextToken());
+        final var edgeCount = Integer.parseInt(tokenStream.nextToken());
 
         header = new Header(vertexCount, faceCount, edgeCount);
 
         return header;
     }
 
-    public void readVertices(
-            final Consumer<Vertex> onVertex
-    ) throws IOException {
-        // vertices
+    public void readVertices(final ThrowingConsumer<Vertex> onVertex) throws IOException {
         for (var i_vertex = 0; i_vertex < header.vertexCount(); ++i_vertex) {
             final var vertex_line = readIgnoreComments(reader);
-            final var vertex_parts = vertex_line.split("\\s+");
-            final var x = Double.parseDouble(vertex_parts[0]);
-            final var y = Double.parseDouble(vertex_parts[1]);
-            final var z = Double.parseDouble(vertex_parts[2]);
+            final var tokenStream = new StringTokenizer(vertex_line, DELIMITER);
+            final var x = Double.parseDouble(tokenStream.nextToken());
+            final var y = Double.parseDouble(tokenStream.nextToken());
+            final var z = Double.parseDouble(tokenStream.nextToken());
 
-            if (Objects.nonNull(onVertex)) {
-                onVertex.accept(new Vertex(x, y, z));
-            }
+            // switch coordinates because .off uses y as vertical axis
+            onVertex.accept(new Vertex(x, z, y));
         }
     }
 
-    public void readFaces(
-            final Consumer<Face> onFace
-    ) throws IOException {
-        // faces
+    public void readFaces(final ThrowingConsumer<Face> onFace) throws IOException {
         for (var i_faces = 0; i_faces < header.faceCount(); ++i_faces) {
             final var face_line = readIgnoreComments(reader);
-            final var face_parts = face_line.split("\\s+");
-            final var faceVertexIndexCount = Integer.parseInt(face_parts[0]);
-
+            final var tokenStream = new StringTokenizer(face_line, DELIMITER);
+            final var faceVertexIndexCount = Integer.parseInt(tokenStream.nextToken());
             final var faceVertexIndices = new ArrayList<Integer>();
             for (var i_vertex = 1; i_vertex <= faceVertexIndexCount; ++i_vertex) {
-                final var index = Integer.parseInt(face_parts[i_vertex]);
+                final var index = Integer.parseInt(tokenStream.nextToken());
                 faceVertexIndices.add(index);
             }
-
-            if (Objects.nonNull(onFace)) {
-                onFace.accept(new Face(faceVertexIndices));
-            }
+            onFace.accept(new Face(faceVertexIndices));
         }
     }
 
-
     private static String readIgnoreComments(final BufferedReader reader) throws IOException {
-        var line = reader.readLine();
-        while (line.trim().startsWith("#")) {
+        var line = reader.readLine().trim();
+        while (line.startsWith("#")) {
             line = reader.readLine();
         }
         return line;
@@ -97,6 +97,8 @@ public final class OffReader implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        reader.close();
+        if (reader != null) {
+            reader.close();
+        }
     }
 }

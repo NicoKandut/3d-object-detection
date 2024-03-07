@@ -8,8 +8,11 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/app-mess-up-bff" />
+            <option value="$PROJECT_DIR$/app-off-to-bff" />
             <option value="$PROJECT_DIR$/app-stats-dataset-psb" />
             <option value="$PROJECT_DIR$/app-train" />
+            <option value="$PROJECT_DIR$/app-traverse-bff-file" />
             <option value="$PROJECT_DIR$/app-voxelize" />
             <option value="$PROJECT_DIR$/lib" />
           </set>

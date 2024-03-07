@@ -13,5 +13,5 @@ dependencies {
 }
 
 application {
-    mainClass = 'nicok.bac.yolo3d.AppVoxelize'
+    mainClass = 'nicok.bac.yolo3d.AppBffShuffle'
 }

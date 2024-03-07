@@ -16,7 +16,7 @@ import static nicok.bac.yolo3d.util.CommandLineUtil.parseCommandLine;
 import static nicok.bac.yolo3d.util.DirectoryUtil.getFilename;
 import static nicok.bac.yolo3d.vox.VoxFileUtil.saveVoxFile;
 
-public class Main {
+public class AppVoxelize {
     public static final Options OPTIONS = new Options()
             .addRequiredOption("i", "input", true, "Input file.")
             .addRequiredOption("o", "output", true, "Output file.")
@@ -39,7 +39,9 @@ public class Main {
 //                .rotate(0.1, 0.2, 0.5)
                 .scaling(12.0)
                 .build();
-        final var inputFile = InputFileProvider.get(inputPath, preprocessing);
+        var inputFile = InputFileProvider.get(inputPath);
+        inputFile = inputFile.withPreprocessing(preprocessing);
+
         final var inputFileName = getFilename(inputPath);
         System.out.printf("File bounds: %s\n", inputFile.getBoundingBox().size());
 

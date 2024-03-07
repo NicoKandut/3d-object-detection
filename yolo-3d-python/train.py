@@ -33,26 +33,29 @@ if __name__ == '__main__':
     # if os.path.exists('checkpoints/weights.hdf5'):
     #     model.load_weights('checkpoints/weights.hdf5', by_name=True)
       
-    # early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=15, verbose=1, mode='auto')
+    early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=15, verbose=1, mode='auto')
 
-    # datasets_path = "../dataset-3d-minecraft"
-    # batch_size = 100
+    datasets_path = "../dataset-psb-vox"
+    batch_size = 100
 
-    # train_generator = SequenceData('train', datasets_path, batch_size)
-    # validation_generator = SequenceData('val', datasets_path, batch_size)
+    train_generator = SequenceData('train', datasets_path, batch_size)
+    validation_generator = SequenceData('val', datasets_path, batch_size)
 
-    # model.fit(
-    #     train_generator,
-    #     steps_per_epoch=len(train_generator),
-    #     epochs=epochs,
-    #     validation_data=validation_generator,
-    #     validation_steps=len(validation_generator),
-    #     # use_multiprocessing=True,
-    #     workers=4,
-    #     callbacks=[checkpoint, early_stopping]
-    # )
+    model.fit(
+        train_generator,
+        steps_per_epoch=len(train_generator),
+        epochs=epochs,
+        validation_data=validation_generator,
+        validation_steps=len(validation_generator),
+        # use_multiprocessing=True,
+        workers=4,
+        callbacks=[
+            # checkpoint,
+            early_stopping
+        ]
+    )
 
-    # model.save_weights('final-weights.hdf5')
-    # model.save("saved_model")
+    model.save_weights('final-weights.hdf5')
+    model.save("saved_model")
 
     

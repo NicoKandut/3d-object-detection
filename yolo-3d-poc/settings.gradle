@@ -3,7 +3,10 @@ rootProject.name = 'yolo-3d-poc'
 // lib for all reusable code
 include 'lib'
 
-// separate application and tools
-include 'app-voxelize'
-include 'app-train'
+// application and tools
+include 'app-mess-up-bff'
+include 'app-off-to-bff'
 include 'app-stats-dataset-psb'
+include 'app-train'
+include 'app-traverse-bff-file'
+include 'app-voxelize'
