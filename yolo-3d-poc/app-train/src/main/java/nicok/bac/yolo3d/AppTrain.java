@@ -2,33 +2,41 @@ package nicok.bac.yolo3d;
 
 import nicok.bac.yolo3d.common.BoundingBox;
 import nicok.bac.yolo3d.common.Point;
+import nicok.bac.yolo3d.dataset.Category;
 import nicok.bac.yolo3d.dataset.Label;
 import nicok.bac.yolo3d.dataset.Model;
 import nicok.bac.yolo3d.dataset.PsbDataset;
+import nicok.bac.yolo3d.inputfile.InputFile;
 import nicok.bac.yolo3d.inputfile.InputFileProvider;
-import nicok.bac.yolo3d.preprocessing.FitToBox;
+import nicok.bac.yolo3d.terminal.ProgressBar;
 import nicok.bac.yolo3d.vox.VoxFileUtil;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 
 import java.io.*;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.lang.Runtime.getRuntime;
+import static nicok.bac.yolo3d.preprocessing.RandomTransformation.randomTransformation;
 import static nicok.bac.yolo3d.util.CommandLineUtil.parseCommandLine;
 import static nicok.bac.yolo3d.util.DirectoryUtil.getRepositoryRoot;
 
-public final class Main {
+public final class AppTrain {
 
     private static final String VOX_DATASET_PATH = "/dataset-psb-vox";
 
     public static final Options OPTIONS = new Options()
             .addOption("e", "epochs", true, "Number of training epochs")
+            .addOption("se", "super-epochs", true, "Number of training set generations")
             .addOption("pd", "prepare-dataset", true, "Regenerate dataset .vox files");
-    public static final int INPUT_SIZE = 224;
+    public static final int INPUT_SIZE = 112;
+    public static final BoundingBox TARGET_BOUNDING_BOX = new BoundingBox(
+            Point.ZERO,
+            new Point(INPUT_SIZE, INPUT_SIZE, INPUT_SIZE)
+    );
+    public static final String PSB_DATASET_PATH = "/dataset-psb";
 
     public static void main(final String[] args) throws Exception {
         final var rootPath = getRepositoryRoot();
@@ -36,60 +44,75 @@ public final class Main {
         // cli parsing
         final var commandLine = parseCommandLine(args, OPTIONS);
         final var epochs = getEpochs(commandLine);
+        final var superEpochs = getSuperEpochs(commandLine);
         final var prepareDataset = getPrepareDataset(commandLine);
 
-        // prepare dataset
-        if (prepareDataset) {
-            System.out.println("Preparing Dataset");
-            prepareDataset(rootPath);
-        }
+        for (int currentSuperEpoch = 1; currentSuperEpoch <= superEpochs; currentSuperEpoch++) {
+            System.out.printf("Super epoch %d / %d\n", currentSuperEpoch, superEpochs);
 
-        // train
-        System.out.println("Starting training. " + epochs + " epochs.");
+            // prepare dataset
+            if (prepareDataset) {
+                System.out.println("Preparing Dataset");
+                prepareDataset(rootPath);
+            }
+
+            // train
+            System.out.println("Starting training. " + epochs + " epochs.");
+            trainInPython(epochs, rootPath);
+            System.out.print("\n");
+        }
+    }
+
+    private static void trainInPython(int epochs, String rootPath) throws IOException {
+
         final var pythonDirectory = rootPath + "/yolo-3d-python";
         final var command = new String[]{"cmd.exe", "/c", "py -3.11 -m train", "--epochs", String.valueOf(epochs)};
         final var process = getRuntime().exec(command, null, new File(pythonDirectory));
         final var outputReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         final var errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
 
-        outputReader.lines().forEach(System.out::println);
-        errorReader.lines().forEach(System.out::println);
+        String line;
+        while ((line = outputReader.readLine()) != null) {
+            System.out.print("\r" + line.trim());
+        }
+
+        while ((line = errorReader.readLine()) != null) {
+//            System.out.println("[PYTHON][ERROR]: " + line);
+        }
     }
 
     private static void prepareDataset(final String rootPath) throws Exception {
         final var dataset = new PsbDataset()
-                .withPath(rootPath + "/dataset-psb")
+                .withPath(rootPath + PSB_DATASET_PATH)
                 .build();
-
-        // scale 3d-models to cnn-input
-        final var preprocessing = new FitToBox()
-                .withTargetBoundingBox(new BoundingBox(
-                        Point.ZERO,
-                        new Point(INPUT_SIZE, INPUT_SIZE, INPUT_SIZE)
-                ));
 
         final var voxDatasetPath = rootPath + VOX_DATASET_PATH + "/";
 
+        var currentProgress = 0;
+        final var progressBar = new ProgressBar(20, dataset.trainModels().size());
+
         for (final var model : dataset.trainModels()) {
             // load 3d-model file
-            final var inputFile = InputFileProvider.get(model.path());
+            final var modelFile = InputFileProvider.get(model.path());
+            final var inputFile = randomTransformation(modelFile, TARGET_BOUNDING_BOX);
 
-            // apply transformation
-            preprocessing.withSourceBoundingBox(inputFile.getBoundingBox());
-            inputFile.withPreprocessing(preprocessing);
+            checkInputFileBounds(inputFile);
 
             // voxelize & get label
-            final var volume = inputFile.read(inputFile.getBoundingBox());
+            final var volume = inputFile.read(TARGET_BOUNDING_BOX);
             final var label = dataset.trainLabels().stream()
                     .filter(l -> l.modelId() == model.id())
                     .findFirst()
                     .orElseThrow();
 
             // save .vox and label files
-            VoxFileUtil.saveVoxFile(voxDatasetPath + model.id() + ".vox", volume);
-            saveLabelFile(voxDatasetPath, label, inputFile.getBoundingBox());
+            final var voxFileName = voxDatasetPath + model.id() + ".vox";
+            final var txtFileName = voxDatasetPath + model.id() + ".txt";
+            VoxFileUtil.saveVoxFile(voxFileName, volume);
+            saveLabelFile(txtFileName, label, inputFile.getBoundingBox());
 
-            System.out.printf(" [m%4d] size: %s\n", model.id(), inputFile.getBoundingBox().size());
+            ++currentProgress;
+            progressBar.printProgress(currentProgress);
         }
 
         final var ids = dataset.trainModels().stream()
@@ -105,6 +128,32 @@ public final class Main {
 
         saveSetFile(voxDatasetPath + "train", trainIds);
         saveSetFile(voxDatasetPath + "val", valIds);
+        saveCategoriesFile(voxDatasetPath + "categories.txt", dataset.categories());
+    }
+
+    private static void checkInputFileBounds(final InputFile inputFile) {
+        if (inputFile.getBoundingBox().min().x() < TARGET_BOUNDING_BOX.min().x() ||
+                inputFile.getBoundingBox().min().y() < TARGET_BOUNDING_BOX.min().y() ||
+                inputFile.getBoundingBox().min().z() < TARGET_BOUNDING_BOX.min().z() ||
+                inputFile.getBoundingBox().max().x() > TARGET_BOUNDING_BOX.max().x() ||
+                inputFile.getBoundingBox().max().x() > TARGET_BOUNDING_BOX.max().y() ||
+                inputFile.getBoundingBox().max().x() > TARGET_BOUNDING_BOX.max().z()
+        ) {
+            throw new IllegalStateException("FUCK");
+        }
+    }
+
+    private static void saveCategoriesFile(
+            final String path,
+            final List<Category> categories
+    ) throws IOException {
+        final var content = categories.stream()
+                .map(category -> String.format("%d %s", category.id(), category.name()))
+                .collect(Collectors.joining("\n"));
+
+        try (final var writer = new FileWriter(path)) {
+            writer.write(content);
+        }
     }
 
     private static void saveSetFile(
@@ -112,7 +161,7 @@ public final class Main {
             final List<Integer> ids
     ) throws IOException {
         final var content = ids.stream()
-                .map(Object::toString)
+                .map(id -> String.format("%s.vox %s.txt", id, id))
                 .collect(Collectors.joining("\n"));
 
         try (final var writer = new FileWriter(filename + ".txt")) {
@@ -138,8 +187,19 @@ public final class Main {
                 max.z()
         );
 
-        try (final var labelWriter = new FileWriter(filename + ".txt")) {
+        try (final var labelWriter = new FileWriter(filename)) {
             labelWriter.write(labelLine);
+        }
+    }
+
+    private static int getSuperEpochs(final CommandLine commandLine) {
+        final var epochString = commandLine.getOptionValue("super-epochs", "1");
+        try {
+            return Integer.parseInt(epochString);
+        } catch (final NumberFormatException e) {
+            System.err.println("Error: " + e.getMessage());
+            System.exit(1);
+            return 1;
         }
     }
 

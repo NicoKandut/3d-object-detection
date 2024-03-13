@@ -6,8 +6,8 @@ import os
 
 from .coordinates import minmax_to_xyzwhd, to_cell_repr
 
-def load_label(label_path, vox_model_size=28, cell_count=7):
-    label_matrix = np.zeros([cell_count, cell_count, cell_count, 2 + 6 + 1])
+def load_label(label_path, vox_model_size=112, cell_count=7, num_classes=48):
+    label_matrix = np.zeros([cell_count, cell_count, cell_count, num_classes + 6 + 1])
     with open(label_path, "r") as label_file:
         for label in label_file.readlines():
             parts = label.split()
@@ -23,10 +23,10 @@ def load_label(label_path, vox_model_size=28, cell_count=7):
             offset_x, offset_y, offset_z = cell_offset
             w, h, d = whd
  
-            if label_matrix[cell_x, cell_y, cell_z, 8] == 0:
+            if label_matrix[cell_x, cell_y, cell_z, -1] == 0:
                 label_matrix[cell_x, cell_y, cell_z, category] = 1
-                label_matrix[cell_x, cell_y, cell_z, 2:8] = [offset_x, offset_y, offset_z, w, h, d]
-                label_matrix[cell_x, cell_y, cell_z, 8] = 1
+                label_matrix[cell_x, cell_y, cell_z, num_classes:(num_classes + 6)] = [offset_x, offset_y, offset_z, w, h, d]
+                label_matrix[cell_x, cell_y, cell_z, -1] = 1
 
     return label_matrix
 
@@ -67,10 +67,10 @@ class SequenceData(Sequence):
         label_path = dataset[1]
 
         vox_model = VoxParser(os.path.join(self.dir, image_path)).parse()
-        vox_rgb_abs = vox_model.to_dense_rgb()
+        vox_rgb_abs = vox_model.to_dense_alpha()
         vox_rgb_rel = vox_rgb_abs / 255.
 
-        label_matrix = load_label(os.path.join(self.dir, label_path), 28)
+        label_matrix = load_label(os.path.join(self.dir, label_path))
         
         # print(f"READING: {image_path}, {vox_rgb_rel.shape} voxels")
 

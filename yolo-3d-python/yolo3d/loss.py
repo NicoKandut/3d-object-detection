@@ -51,7 +51,7 @@ def create_grid_index(shape, index_type):
 
     return conv_index
 
-def yolo_head(feats):
+def yolo_head(feats, input_size=112, num_classes=48, num_channels=1):
     # Dynamic implementation of conv dims for fully convolutional model.
     conv_dims = (7,7,7)  # assuming channels last
     # In YOLO the height index is the inner most iteration.
@@ -59,17 +59,17 @@ def yolo_head(feats):
     conv_index = create_grid_index(conv_dims, K.dtype(feats))
     conv_dims = K.cast(K.reshape(conv_dims, [1,1,1,1,3]), K.dtype(feats))
 
-    box_xyz = (feats[..., :3] + conv_index) / conv_dims * 28
-    box_whd = feats[..., 3:6] * 28
+    box_xyz = (feats[..., :3] + conv_index) / conv_dims * input_size
+    box_whd = feats[..., 3:6] * input_size
 
     return box_xyz, box_whd
 
-def yolo_class_loss(y_true, y_pred):
-    label_class    = y_true[..., :2]  # ?x7x7x7x2
-    label_response = y_true[..., 8]   # ?x7x7x7x1
+def yolo_class_loss(y_true, y_pred, num_classes=48):
+    label_class    = y_true[..., :num_classes] # ?x7x7x7x(num_classes)
+    label_response = y_true[..., -1]           # ?x7x7x7x1
 
-    predict_class = y_pred[..., :2]  # ?x7x7x7x2
-    predict_trust = y_pred[..., 8]   # ?x7x7x7x1
+    predict_class  = y_pred[..., :num_classes] # ?x7x7x7x(num_classes)
+    predict_trust  = y_pred[..., -1]           # ?x7x7x7x1
 
     response_mask  = K.expand_dims(label_response)
     predict_trust  = K.expand_dims(predict_trust)
@@ -78,12 +78,16 @@ def yolo_class_loss(y_true, y_pred):
 
     return class_loss
 
-def yolo_box_loss(y_true, y_pred):
-    label_box      = y_true[..., 2:8] # ?x7x7x7x6
-    label_response = y_true[..., 8]   # ?x7x7x7x1
+def yolo_box_loss(y_true, y_pred, input_size=112, num_classes=48):
+    # position of box information in output
+    start = num_classes
+    end = num_classes + 6
 
-    predict_box   = y_pred[..., 2:8] # ?x7x7x7x6
-    predict_trust = y_pred[..., 8]   # ?x7x7x7x1
+    label_box      = y_true[..., start:end] # ?x7x7x7x6
+    label_response = y_true[..., -1]        # ?x7x7x7x1
+
+    predict_box    = y_pred[..., start:end] # ?x7x7x7x6
+    predict_trust  = y_pred[..., -1]        # ?x7x7x7x1
     
     response_mask  = K.expand_dims(label_response)
     predict_trust  = K.expand_dims(predict_trust)
@@ -98,18 +102,22 @@ def yolo_box_loss(y_true, y_pred):
     best_box = K.max(iou_scores, axis=4, keepdims=True)  # ? * 7 * 7 * 1
     box_mask = K.cast(iou_scores >= best_box, K.dtype(iou_scores))  # ? * 7 * 7 * 2
 
-    box_loss = 7 * box_mask * response_mask * K.square((label_xyz - predict_xyz) / 28)
-    box_loss += 7 * box_mask * response_mask * K.square((K.sqrt(label_whd) - K.sqrt(predict_whd)) / 28)
+    box_loss = 7 * box_mask * response_mask * K.square((label_xyz - predict_xyz) / input_size)
+    box_loss += 7 * box_mask * response_mask * K.square((K.sqrt(label_whd) - K.sqrt(predict_whd)) / input_size)
 
     return box_loss
 
 
-def yolo_confidence_loss(y_true, y_pred):
-    label_box      = y_true[..., 2:8] # ?x7x7x7x6
-    label_response = y_true[..., 8]   # ?x7x7x7x1
+def yolo_confidence_loss(y_true, y_pred, input_size=112, num_classes=48):
+    # position of box information in output
+    start = num_classes
+    end = num_classes + 6
 
-    predict_box   = y_pred[..., 2:8] # ?x7x7x7x6
-    predict_trust = y_pred[..., 8]   # ?x7x7x7x1
+    label_box      = y_true[..., start:end] # ?x7x7x7x6
+    label_response = y_true[..., -1]        # ?x7x7x7x1
+
+    predict_box    = y_pred[..., start:end] # ?x7x7x7x6
+    predict_trust  = y_pred[..., -1]        # ?x7x7x7x1
 
     response_mask  = K.expand_dims(label_response)
     predict_trust  = K.expand_dims(predict_trust)

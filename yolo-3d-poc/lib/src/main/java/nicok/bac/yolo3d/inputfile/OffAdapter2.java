@@ -40,12 +40,15 @@ public class OffAdapter2 implements InputFile {
 
     @Override
     public InputFile withPreprocessing(final Transformation preProcessing) {
+        final var boundingBox = new BoundingBox.Builder();
+
         mesh = new OffMesh(
                 mesh.vertices().stream()
                         .map(preProcessing::apply)
+                        .peek(boundingBox::withVertex)
                         .toList(),
                 mesh.faces(),
-                preProcessing.apply(mesh.boundingBox())
+                boundingBox.build()
         );
 
         triangleEvents = getTriangleEvents();

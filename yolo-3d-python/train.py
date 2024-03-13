@@ -16,27 +16,27 @@ if __name__ == '__main__':
     epochs = int(args.epochs)
 
     inputs = Input(input_shape())
-    outputs = model_tiny_yolov1(inputs, pooling_layers=5)
+    outputs = model_tiny_yolov1(inputs, num_classes=48, pooling_layers=4)
 
     model = Model(inputs=inputs, outputs=outputs)
     model.compile(loss=yolo_loss, optimizer='adam')
 
-    model.summary()
+    # model.summary()
 
-    # save_dir = 'checkpoints'
-    # weights_path = os.path.join(save_dir, 'weights.hdf5')
-    # checkpoint = ModelCheckpoint(weights_path, monitor='val_loss', save_weights_only=True, save_best_only=True)
+    save_dir = 'checkpoints'
+    weights_path = os.path.join(save_dir, 'weights.hdf5')
+    checkpoint = ModelCheckpoint(weights_path, monitor='val_loss', save_weights_only=True, save_best_only=True)
 
-    # if not os.path.isdir(save_dir):
-    #     os.makedirs(save_dir)
+    if not os.path.isdir(save_dir):
+        os.makedirs(save_dir)
 
-    # if os.path.exists('checkpoints/weights.hdf5'):
-    #     model.load_weights('checkpoints/weights.hdf5', by_name=True)
+    if os.path.exists('checkpoints/weights.hdf5'):
+        model.load_weights('checkpoints/weights.hdf5', by_name=True)
       
     early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=15, verbose=1, mode='auto')
 
     datasets_path = "../dataset-psb-vox"
-    batch_size = 100
+    batch_size = 10
 
     train_generator = SequenceData('train', datasets_path, batch_size)
     validation_generator = SequenceData('val', datasets_path, batch_size)
@@ -50,7 +50,7 @@ if __name__ == '__main__':
         # use_multiprocessing=True,
         workers=4,
         callbacks=[
-            # checkpoint,
+            checkpoint,
             early_stopping
         ]
     )

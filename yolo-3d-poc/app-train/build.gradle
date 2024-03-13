@@ -14,5 +14,5 @@ dependencies {
 }
 
 application {
-    mainClass = 'nicok.bac.yolo3d.Main'
+    mainClass = 'nicok.bac.yolo3d.AppTrain'
 }

@@ -25,15 +25,64 @@ def get_class_name(class_confidence):
             max_value = value
             max_index = index
         
-    classes = ["tree", "rock"]
+    classes = [
+        "aircraft",
+        "animal",
+        "blade",
+        "body_part",
+        "bridge",
+        "building",
+        "chess_piece",
+        "chest",
+        "city",
+        "computer",
+        "display_device",
+        "door",
+        "fantasy_animal",
+        "furniture",
+        "gun",
+        "hat",
+        "ice_cream",
+        "lamp",
+        "liquid_container",
+        "microchip",
+        "musical_instrument",
+        "phone_handle",
+        "plant",
+        "sea_vessel",
+        "shoe",
+        "sign",
+        "skateboard",
+        "snowman",
+        "swingset",
+        "tool",
+        "vehicle",
+        "watch",
+        "wheel",
+        "microscope",
+        "book",
+        "chess_set",
+        "eyeglasses",
+        "fireplace",
+        "geographic_map",
+        "hourglass",
+        "ladder",
+        "mailbox",
+        "newtonian_toy",
+        "satellite_dish",
+        "sink",
+        "slot_machine",
+        "staircase",
+        "umbrella"
+    ]
 
     return classes[max_index]
 
 def get_class_color(pred_class):
-    if pred_class == "tree":
-        return 226
-    if pred_class == "rock":
-        return 236
+    # if pred_class == "tree":
+    #     return 226
+    # if pred_class == "rock":
+    #     return 236
     return 216
 
 def by_trust(predicted_box):
@@ -46,14 +95,15 @@ def trust_greater_threshold(predicted_box):
 
 def get_predicted_boxes(y):
     predicted_boxes = []
+    num_classes = 48
 
     for i in range(y.shape[1]):
         for j in range(y.shape[2]):
             for k in range(y.shape[3]):
                 prediction = y[0, i, j, k]
-                trust = prediction[8]
-                pred_class = get_class_name(prediction[0:2])
-                xyz, whd = from_cell_repr(np.array([i,j,k]), prediction[2:5], prediction[5:8], 7, 28)
+                trust = prediction[-1]
+                pred_class = get_class_name(prediction[0:num_classes])
+                xyz, whd = from_cell_repr(np.array([i,j,k]), prediction[num_classes:(num_classes+3)], prediction[(num_classes+3):(num_classes+6)], 7, 112)
                 p0, p1 = xyzwhd_to_minmax(xyz, whd)
                 predicted_boxes.append((trust, pred_class, p0, p1))
 
@@ -84,14 +134,15 @@ def print_boxes(boxes):
 
 def get_expected_boxes(y):
     expected_boxes = []
+    num_classes = 48
 
     for i in range(y.shape[0]):
         for j in range(y.shape[1]):
             for k in range(y.shape[2]):
                 response = y[i, j, k]
-                if response[8] > 0.5:
-                    y_class = get_class_name(response[0:2])
-                    xyz, whd = from_cell_repr(np.array([i,j,k]), response[2:5], response[5:8], 7, 28)
+                if response[-1] > 0.3:
+                    y_class = get_class_name(response[0:num_classes])
+                    xyz, whd = from_cell_repr(np.array([i,j,k]), response[(num_classes):(num_classes+3)], response[(num_classes+3):(num_classes+6)], 7, 112)
                     p0, p1 = xyzwhd_to_minmax(xyz, whd)
                     expected_boxes.append((1.0, y_class, p0, p1))
 
@@ -125,27 +176,27 @@ def save_boxes_to_file(sample_name, vox_file, predicted_boxes):
 
 if __name__ == '__main__': 
     # sample_name = sys.argv[1]
-    sample_name = "val_0"
+    sample_name = "17"
 
     # setup model
-    input_shape = (1, 28, 28, 28, 3)
+    input_shape = (1, 112, 112, 112, 1)
     inputs = Input(input_shape[1:5])
-    outputs = model_tiny_yolov1(inputs, 2)
+    outputs = model_tiny_yolov1(inputs, num_classes=48, pooling_layers=4)
     model = Model(inputs=inputs, outputs=outputs)
     model.load_weights('final-weights.hdf5', by_name=True)
 
     # load data
-    vox_file = VoxParser(f"../dataset-3d-minecraft/{sample_name}.vox").parse()
-    vox_rgb = vox_file.to_dense_rgb()
+    vox_file = VoxParser(f"../dataset-psb-vox/{sample_name}.vox").parse()
+    vox_rgb = vox_file.to_dense_alpha()
     vox_rgb = vox_rgb / 255.
     vox_rgb = np.reshape(vox_rgb, input_shape)
     
-    for i in range(vox_rgb.shape[0]):
-        for j in range(vox_rgb.shape[1]):
-            for k in range(vox_rgb.shape[2]):
-                [r,g,b] = vox_rgb[0,i,j,k]
-                if r+g+b != 0:
-                    print(f"[{i},{j},{k}]: ({r}, {g}, {b})")
+    # for i in range(vox_rgb.shape[0]):
+    #     for j in range(vox_rgb.shape[1]):
+    #         for k in range(vox_rgb.shape[2]):
+    #             alpha = vox_rgb[0,i,j,k]
+    #             if alpha != 0:
+    #                 print(f"[{i},{j},{k}]: ({r}, {g}, {b})")
 
 
     print(f"Predicting objects in: {sample_name}")
@@ -155,7 +206,7 @@ if __name__ == '__main__':
     y = K.variable(y)
 
     # compare with label
-    y_true = load_label(f"../dataset-3d-minecraft/{sample_name}.txt", 28)
+    y_true = load_label(f"../dataset-psb-vox/{sample_name}.txt", 112)
     y_true = K.variable(y_true)
     
     loss = yolo_loss(y_true, y)

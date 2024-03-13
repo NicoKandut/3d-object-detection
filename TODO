@@ -3,11 +3,8 @@
 - propose a solution for 3d based on papers and existing research
 - write java code for it    
 
-intermediate format will be necessary
-off format for princeton benchmark
-where to get that dataset???
+intermediate format will be necessary BFF 💖
 different model sizes + parameter + weights file
-quickly gets too big... => more than 28 not possible with non uniform feature extractors
 try out uniform feature extractors
 
 test on empty data

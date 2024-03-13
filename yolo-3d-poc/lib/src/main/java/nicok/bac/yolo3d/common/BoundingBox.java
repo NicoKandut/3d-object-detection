@@ -1,6 +1,7 @@
 package nicok.bac.yolo3d.common;
 
 import com.scs.voxlib.GridPoint3;
+import com.scs.voxlib.Voxel;
 import nicok.bac.yolo3d.off.Vertex;
 
 public record BoundingBox(Point min, Point max) {
@@ -72,6 +73,15 @@ public record BoundingBox(Point min, Point max) {
             maxX = Double.max(maxX, vertex.x());
             maxY = Double.max(maxY, vertex.y());
             maxZ = Double.max(maxZ, vertex.z());
+        }
+
+        public void withVoxel(final Voxel voxel) {
+            minX = Double.min(minX, voxel.getPosition().x);
+            minY = Double.min(minY, voxel.getPosition().y);
+            minZ = Double.min(minZ, voxel.getPosition().z);
+            maxX = Double.max(maxX, voxel.getPosition().x);
+            maxY = Double.max(maxY, voxel.getPosition().y);
+            maxZ = Double.max(maxZ, voxel.getPosition().z);
         }
 
         public BoundingBox build() {

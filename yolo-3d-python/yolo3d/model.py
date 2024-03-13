@@ -6,12 +6,14 @@ import keras.backend as K
 
 
 def input_shape():
-    size = 224
+    size = 112
     return (size, size, size, 1)
 
 class Yolo_Reshape(Layer):
-    def __init__(self, target_shape, **kwargs):
+    def __init__(self, output_size, num_classes, **kwargs):
+        target_shape = (output_size, output_size, output_size, (num_classes + 7))
         super(Yolo_Reshape, self).__init__(**kwargs)
+        self.num_classes=num_classes
         self.target_shape = tuple(target_shape)
 
     def compute_output_shape(self, input_shape):
@@ -19,11 +21,11 @@ class Yolo_Reshape(Layer):
         return output_shape
 
     def call(self, inputs, **kwargs):
-        S = [self.target_shape[0], self.target_shape[1], self.target_shape[2]]
-        C = 2
-        B = 1
+        S = [self.target_shape[0], self.target_shape[1], self.target_shape[2]] # general output shape
+        C = self.num_classes # classes
+        B = 1 # boxes
         idx1 = S[0] * S[1] * S[2] * C
-        idx2 = idx1 + S[0] * S[1] * S[2] * B
+        idx2 = idx1 + S[0] * S[1] * S[2] * B # TODO: inspect this further
 
         # class prediction
         class_shape = (K.shape(inputs)[0],) + tuple([S[0], S[1], S[2], C])
@@ -58,38 +60,38 @@ def model_tiny_yolov1(inputs, num_classes=2, pooling_layers=2, output_size=7):
     x = inputs
 
     if pooling_layers >= 7:
-        x = conv_layer('7', x, 8)
+        x = conv_layer('7', x, 2)
         x = pool_layer(x)
 
     if pooling_layers >= 6:
-        x = conv_layer('6', x, 16)
+        x = conv_layer('6', x, 4)
         x = pool_layer(x)
 
     if pooling_layers >= 5:
-        x = conv_layer('5', x, 32)
+        x = conv_layer('5', x, 8)
         x = pool_layer(x)
 
     if pooling_layers >= 4:
-        x = conv_layer('4', x, 64)
+        x = conv_layer('4', x, 16)
         x = pool_layer(x)
 
     if pooling_layers >= 3:
-        x = conv_layer('3', x, 128)
+        x = conv_layer('3', x, 32)
         x = pool_layer(x)
 
     if pooling_layers >= 2:
-        x = conv_layer('2', x, 256)
+        x = conv_layer('2', x, 64)
         x = pool_layer(x)
 
     if pooling_layers >= 1:
-        x = conv_layer('1', x, 512)
+        x = conv_layer('1', x, 128)
         x = pool_layer(x)
 
-    x = conv_layer('e1', x, 1024)
-    x = conv_layer('e2', x, 256)
+    x = conv_layer('e1', x, 128)
+    x = conv_layer('e2', x, 64)
 
     x = Flatten()(x)
     x = Dense(output_size * output_size * output_size * (num_classes + 7), activation='linear', name='connected_0')(x)
-    outputs = Yolo_Reshape((output_size, output_size, output_size, (num_classes + 7)))(x)
+    outputs = Yolo_Reshape(output_size, num_classes)(x)
 
     return outputs

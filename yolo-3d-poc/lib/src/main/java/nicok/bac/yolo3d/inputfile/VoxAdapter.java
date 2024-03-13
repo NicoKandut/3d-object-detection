@@ -56,14 +56,13 @@ public class VoxAdapter implements InputFile {
 
     @Override
     public InputFile withPreprocessing(final Transformation preProcessing) {
-        this.voxels = this.voxels.stream().map(preProcessing::apply).toList();
-        this.boundingBox = preProcessing.apply(this.boundingBox);
+        final var boundingBoxBuilder = new BoundingBox.Builder();
+        this.voxels = this.voxels.stream()
+                .map(preProcessing::apply)
+                .peek(boundingBoxBuilder::withVoxel)
+                .toList();
+        this.boundingBox = boundingBoxBuilder.build();
         return this;
-    }
-
-    @Override
-    public BoundingBox getBoundingBox() {
-        return boundingBox;
     }
 
     private static List<Voxel> getVoxels(final VoxFile voxFile) {
@@ -77,5 +76,10 @@ public class VoxAdapter implements InputFile {
                 new Point(0, 0, 0),
                 new Point(size.x, size.y, size.z)
         );
+    }
+
+    @Override
+    public BoundingBox getBoundingBox() {
+        return this.boundingBox;
     }
 }

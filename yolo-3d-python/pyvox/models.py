@@ -41,6 +41,17 @@ class Vox(object):
             # print(f"Voxel {v.y, m.size.z-v.z-1, v.x}")
 
         return res
+    
+    def to_dense_alpha(self, model_idx=0):
+
+        import numpy as np
+        m = self.models[model_idx]
+        res = np.zeros(( m.size.y, m.size.z, m.size.x, 1), dtype='B')
+
+        for v in m.voxels:
+            res[v.y, m.size.z-v.z-1, v.x, 0] = self.palette[v.c][3]
+
+        return res
 
     def to_dense(self, model_idx=0):
 

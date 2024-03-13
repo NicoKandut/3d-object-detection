@@ -2,16 +2,12 @@ package nicok.bac.yolo3d;
 
 import nicok.bac.yolo3d.common.BoundingBox;
 import nicok.bac.yolo3d.common.Point;
-import nicok.bac.yolo3d.inputfile.InputFile;
 import nicok.bac.yolo3d.inputfile.InputFileProvider;
-import nicok.bac.yolo3d.preprocessing.LinearTransformation;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static java.util.Objects.requireNonNull;
+import static nicok.bac.yolo3d.preprocessing.RandomTransformation.randomTransformation;
 import static nicok.bac.yolo3d.util.CommandLineUtil.parseCommandLine;
 import static nicok.bac.yolo3d.util.DirectoryUtil.getFilename;
 import static nicok.bac.yolo3d.vox.VoxFileUtil.saveVoxFile;
@@ -21,11 +17,14 @@ public class AppVoxelize {
             .addRequiredOption("i", "input", true, "Input file.")
             .addRequiredOption("o", "output", true, "Output file.")
             .addOption("s", "split", true, "Split the model into equal boxes along each axis");
+    private static final BoundingBox TARGET_BOUNDING_BOX = new BoundingBox(
+            Point.ZERO,
+            new Point(112, 112, 112)
+    );
 
     /**
      * Usage: :app-voxelize:run --args='-i path/to/file.off -o path/to/output/dir'
      */
-
     public static void main(String[] args) throws Exception {
         final var commandLine = parseCommandLine(args, OPTIONS);
         final var inputPath = commandLine.getOptionValue("input");
@@ -35,69 +34,29 @@ public class AppVoxelize {
         requireNonNull(inputPath);
         requireNonNull(outputPath);
 
-        final var preprocessing = new LinearTransformation.Builder()
-//                .rotate(0.1, 0.2, 0.5)
-                .scaling(12.0)
-                .build();
-        var inputFile = InputFileProvider.get(inputPath);
-        inputFile = inputFile.withPreprocessing(preprocessing);
+        // load 3d-model file
+        final var baseFile = InputFileProvider.get(inputPath);
+        final var inputFile = randomTransformation(baseFile, TARGET_BOUNDING_BOX);
 
         final var inputFileName = getFilename(inputPath);
-        System.out.printf("File bounds: %s\n", inputFile.getBoundingBox().size());
+        System.out.printf("File bounds: %s\n", inputFile.getBoundingBox());
 
-        final var boxes = getBoundingBoxes(inputFile, splitSize);
-        System.out.printf("Splitting will generate %d boxes\n", boxes.size());
+        System.out.println("Saving VOX file");
+        final var filename = outputPath + "/" + inputFileName + ".vox";
 
-        System.out.println("Saving VOX files:");
-        for (int i = 0; i < boxes.size(); i++) {
-            final var box = boxes.get(i);
-
-            final var filename = boxes.size() > 1
-                    ? outputPath + "/" + inputFileName + "_" + i + ".vox"
-                    : outputPath + "/" + inputFileName + ".vox";
-
-            final var volume = inputFile.read(box);
-            System.out.printf("  Saving to %s\n", filename);
-            saveVoxFile(filename, volume);
-        }
+        final var volume = inputFile.read(TARGET_BOUNDING_BOX);
+        System.out.printf("  Saving %s to %s\n", TARGET_BOUNDING_BOX, filename);
+        saveVoxFile(filename, volume);
 
         System.out.println("DONE");
     }
 
-    private static int getSplitSize(CommandLine commandLine) {
+    private static int getSplitSize(final CommandLine commandLine) {
         try {
             return Integer.parseInt(commandLine.getOptionValue("split"));
         } catch (final NumberFormatException ignored) {
             return 1;
         }
-    }
-
-    private static List<BoundingBox> getBoundingBoxes(
-            final InputFile inputFile,
-            final int splits
-    ) {
-        final var min = inputFile.getBoundingBox().min();
-        final var step = Point.mul(1.0 / (double) splits, inputFile.getBoundingBox().size());
-        final var boxes = new ArrayList<BoundingBox>();
-
-        for (int z = 0; z < splits; z++) {
-            for (int y = 0; y < splits; y++) {
-                for (int x = 0; x < splits; x++) {
-                    final var offset = new Point(
-                            x * step.x(),
-                            y * step.y(),
-                            z * step.z()
-                    );
-                    final var from = Point.add(min, offset);
-                    final var to = Point.add(from, step);
-                    final var box = new BoundingBox(from, to);
-
-                    boxes.add(box);
-                }
-            }
-        }
-
-        return boxes;
     }
 }
 
