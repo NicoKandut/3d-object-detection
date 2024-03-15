@@ -9,12 +9,13 @@ public final class InputFileProvider {
 
         return switch (extension) {
             case "vox" -> new VoxAdapter(path);
-            case "off" -> new OffAdapter2(path);
-            case "obj" -> null;
+            case "off" -> new OffAdapter(path);
+            case "bff" -> new BffAdapter(path);
             default -> throw new IllegalExtensionException(extension);
         };
     }
 
     private InputFileProvider() {
+        throw new UnsupportedOperationException();
     }
 }

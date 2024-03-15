@@ -4,8 +4,10 @@ rootProject.name = 'yolo-3d-poc'
 include 'lib'
 
 // application and tools
-include 'app-mess-up-bff'
+include 'app-create-big-file'
+include 'app-shuffle-bff'
 include 'app-off-to-bff'
+include 'app-scan-big-file'
 include 'app-stats-dataset-psb'
 include 'app-train'
 include 'app-traverse-bff-file'

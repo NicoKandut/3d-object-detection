@@ -1,7 +1,6 @@
 package nicok.bac.yolo3d.preprocessing;
 
 import nicok.bac.yolo3d.common.BoundingBox;
-import nicok.bac.yolo3d.common.Point;
 import nicok.bac.yolo3d.inputfile.InputFile;
 import nicok.bac.yolo3d.off.Vertex;
 
@@ -10,32 +9,16 @@ import java.util.Random;
 public final class RandomTransformation {
 
     public static InputFile randomTransformation(InputFile inputFile, final BoundingBox targetBoundingBox) {
-        // scale 3d-models to cnn-input
         final var random = new Random();
-        final var beta = (random.nextDouble() - 0.5) * Math.PI / 8;
-        final var gamma = (random.nextDouble() - 0.5) * Math.PI / 8;
-        final var alpha = random.nextDouble() * 2 * Math.PI;
-        final var randomRotation = new LinearTransformation.Builder()
-                .rotationCenter(inputFile.getBoundingBox().center())
-                .rotate(alpha, beta, gamma)
-                .scaling(80.0)
-                .build();
+        final var randomRotation = getRandomRotation(inputFile.getBoundingBox(), random);
 
+        // scale 3d-models to cnn-input
         final var newSize = ((double) 112 / 2) + random.nextDouble() * ((double) 112 / 2);
-        final var newBoundingBox = new BoundingBox(
-                Point.ZERO,
-                new Point(newSize, newSize, newSize)
-        );
+        final var newBoundingBox = BoundingBox.fromOrigin(newSize);
 
         final var resize = new FitToBox()
                 .withTargetBoundingBox(newBoundingBox);
-        final var availableSpace = Point.sub(targetBoundingBox.size(), newBoundingBox.size());
-        final var shiftX = random.nextDouble() * availableSpace.x();
-        final var shiftY = random.nextDouble() * availableSpace.y();
-        final var shiftZ = random.nextDouble() * availableSpace.z();
-        final var randomShift = new LinearTransformation.Builder()
-                .shift(new Vertex(shiftX, shiftY, shiftZ))
-                .build();
+        final var randomShift = getRandomShift(targetBoundingBox, newBoundingBox, random);
 
         // apply rotation
         inputFile = inputFile.withPreprocessing(randomRotation);
@@ -47,6 +30,31 @@ public final class RandomTransformation {
         // apply random offset
         inputFile = inputFile.withPreprocessing(randomShift);
         return inputFile;
+    }
+
+    public static LinearTransformation getRandomShift(
+            final BoundingBox space,
+            final BoundingBox object,
+            final Random random
+    ) {
+        final var availableSpace = Vertex.sub(space.size(), object.size());
+        final var shiftX = random.nextDouble() * availableSpace.x();
+        final var shiftY = random.nextDouble() * availableSpace.y();
+        final var shiftZ = random.nextDouble() * availableSpace.z();
+        System.out.printf("Shift : %3.2f, %3.2f, %3.2f \n", shiftX, shiftY, shiftZ);
+        return new LinearTransformation.Builder()
+                .shift(new Vertex(shiftX, shiftY, shiftZ))
+                .build();
+    }
+
+    public static LinearTransformation getRandomRotation(BoundingBox boundingBox, Random random) {
+        final var beta = (random.nextDouble() - 0.5) * Math.PI / 8;
+        final var gamma = (random.nextDouble() - 0.5) * Math.PI / 8;
+        final var alpha = random.nextDouble() * 2 * Math.PI;
+        return new LinearTransformation.Builder()
+                .rotationCenter(boundingBox.center())
+                .rotate(alpha, beta, gamma)
+                .build();
     }
 
     private RandomTransformation() {

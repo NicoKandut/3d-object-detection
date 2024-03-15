@@ -1,7 +1,7 @@
 package nicok.bac.yolo3d.voxelization;
 
 import nicok.bac.yolo3d.common.BoundingBox;
-import nicok.bac.yolo3d.common.Point;
+import nicok.bac.yolo3d.off.Vertex;
 import nicok.bac.yolo3d.common.Volume3D;
 import nicok.bac.yolo3d.off.VertexMesh;
 
@@ -20,8 +20,8 @@ public class Voxelizer {
             BoundingBox target
     ) {
         final var boundingBox = new BoundingBox(
-                Point.mul(1 / voxelSize, target.min()),
-                Point.mul(1 / voxelSize, target.max())
+                Vertex.mul(target.min(), 1 / voxelSize),
+                Vertex.mul(target.max(), 1 / voxelSize)
         );
 
         final var lines = new ArrayList<VertexMesh.Line>();

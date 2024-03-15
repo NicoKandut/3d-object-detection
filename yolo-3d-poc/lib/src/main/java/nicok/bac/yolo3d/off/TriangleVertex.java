@@ -1,6 +1,6 @@
 package nicok.bac.yolo3d.off;
 
-import nicok.bac.yolo3d.common.Point;
+import nicok.bac.yolo3d.off.Vertex;
 
 import java.util.Comparator;
 import java.util.List;

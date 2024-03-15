@@ -1,6 +1,6 @@
 package nicok.bac.yolo3d.off;
 
-import nicok.bac.yolo3d.common.Point;
+import nicok.bac.yolo3d.off.Vertex;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,26 +8,26 @@ import java.util.List;
 public record Face(
         List<Integer> vertexIndices
 ) {
-    public Point normal(final List<Vertex> vertices) {
+    public Vertex normal(final List<Vertex> vertices) {
         final var a = vertices.get(vertexIndices().get(0));
         final var b = vertices.get(vertexIndices().get(1));
         final var c = vertices.get(vertexIndices().get(2));
 
-        final var v1 = new Point(
+        final var v1 = new Vertex(
                 b.x() - a.x(),
                 b.y() - a.y(),
                 b.z() - a.z()
         );
-        final var v2 = new Point(
+        final var v2 = new Vertex(
                 b.x() - c.x(),
                 b.y() - c.y(),
                 b.z() - c.z()
         );
 
-        return Point.cross(v1, v2);
+        return Vertex.cross(v1, v2);
     }
 
-    public Point center(final List<Vertex> vertices) {
+    public Vertex center(final List<Vertex> vertices) {
         var xSum = 0.0;
         var ySum = 0.0;
         var zSum = 0.0;
@@ -39,7 +39,7 @@ public record Face(
             zSum += vertex.z();
         }
 
-        return new Point(
+        return new Vertex(
                 xSum / vertexIndices.size(),
                 zSum / vertexIndices.size(),
                 ySum / vertexIndices.size()

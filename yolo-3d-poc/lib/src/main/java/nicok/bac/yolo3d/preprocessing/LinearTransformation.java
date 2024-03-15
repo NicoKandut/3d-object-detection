@@ -1,6 +1,6 @@
 package nicok.bac.yolo3d.preprocessing;
 
-import nicok.bac.yolo3d.common.Point;
+import nicok.bac.yolo3d.off.Vertex;
 import nicok.bac.yolo3d.off.Vertex;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -54,7 +54,7 @@ public record LinearTransformation(RealMatrix transformation) implements Transfo
             return this;
         }
 
-        public Builder rotationCenter(final Point center) {
+        public Builder rotationCenter(final Vertex center) {
             this.center = new Vertex(center.x(), center.y(), center.z());
             return this;
         }

@@ -4,20 +4,52 @@ import com.scs.voxlib.GridPoint3;
 import com.scs.voxlib.Voxel;
 import nicok.bac.yolo3d.off.Vertex;
 
-public record BoundingBox(Point min, Point max) {
+import static java.util.Objects.requireNonNull;
 
-    public Point size() {
-        return Point.sub(max, min);
+/**
+ * Represents an axis-aligned bounding box in 3D space.
+ */
+public record BoundingBox(
+        Vertex min,
+        Vertex max
+) {
+    public BoundingBox {
+        requireNonNull(min);
+        requireNonNull(max);
     }
 
-    public static double getIntersectOverUnion(BoundingBox a, BoundingBox b) {
-        final var intersectMin = Point.max(a.min, b.min);
-        final var intersectMax = Point.min(a.max, b.max);
-        final var intersectWhd = Point.max(Point.sub(intersectMax, intersectMin), Point.ZERO);
+    /**
+     * Creates a new bounding box from the origin to the given vertex.
+     */
+    public static BoundingBox fromOrigin(final Vertex to) {
+        return new BoundingBox(Vertex.ORIGIN, to);
+    }
+
+    /**
+     * Creates a new bounding box from the origin to the point (size, size, size).
+     */
+    public static BoundingBox fromOrigin(final double size) {
+        return new BoundingBox(Vertex.ORIGIN, new Vertex(size, size, size));
+    }
+
+    /**
+     * Returns the size of the bounding box.
+     */
+    public Vertex size() {
+        return Vertex.sub(max, min);
+    }
+
+    /**
+     * Calculates both the intersection and the union of two bounding boxes and returns the intersection over union.
+     */
+    public static double getIntersectOverUnion(final BoundingBox a, final BoundingBox b) {
+        final var intersectMin = Vertex.max(a.min, b.min);
+        final var intersectMax = Vertex.min(a.max, b.max);
+        final var intersectWhd = Vertex.max(Vertex.sub(intersectMax, intersectMin), Vertex.ORIGIN);
         final var intersectVolume = intersectWhd.x() * intersectWhd.y() * intersectWhd.z();
 
-        final var aWhd = Point.sub(a.max, a.min);
-        final var bWhd = Point.sub(b.max, b.min);
+        final var aWhd = Vertex.sub(a.max, a.min);
+        final var bWhd = Vertex.sub(b.max, b.min);
         final var predVolume = aWhd.x() * aWhd.y() * aWhd.z();
         final var trueVolume = bWhd.x() * bWhd.y() * bWhd.z();
 
@@ -26,10 +58,10 @@ public record BoundingBox(Point min, Point max) {
         return intersectVolume / unionVolume;
     }
 
-    public static BoundingBox addOffset(BoundingBox box, Point offset) {
+    public static BoundingBox addOffset(BoundingBox box, Vertex offset) {
         return new BoundingBox(
-                Point.add(box.min, offset),
-                Point.add(box.max, offset)
+                Vertex.add(box.min, offset),
+                Vertex.add(box.max, offset)
         );
     }
 
@@ -45,17 +77,20 @@ public record BoundingBox(Point min, Point max) {
                 vertex.z() >= min.z() && vertex.z() < max.z();
     }
 
-    public Point center() {
-        return new Point(
-                (min.x() + max.x()) / 2f,
-                (min.y() + max.y()) / 2f,
-                (min.z() + max.z()) / 2f
+    /**
+     * Returns the center of the bounding box.
+     */
+    public Vertex center() {
+        return new Vertex(
+                (min.x() + max.x()) / 2.0,
+                (min.y() + max.y()) / 2.0,
+                (min.z() + max.z()) / 2.0
         );
     }
 
     @Override
     public String toString() {
-        return String.format("from %s to %s", min, max);
+        return String.format("[%s to %s]", min, max);
     }
 
     public static final class Builder {
@@ -86,8 +121,8 @@ public record BoundingBox(Point min, Point max) {
 
         public BoundingBox build() {
             return new BoundingBox(
-                    new Point(minX, minY, minZ),
-                    new Point(maxX, maxY, maxZ)
+                    new Vertex(minX, minY, minZ),
+                    new Vertex(maxX, maxY, maxZ)
             );
         }
     }

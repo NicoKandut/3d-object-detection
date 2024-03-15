@@ -1,7 +1,6 @@
 package nicok.bac.yolo3d;
 
 import nicok.bac.yolo3d.common.BoundingBox;
-import nicok.bac.yolo3d.common.Point;
 import nicok.bac.yolo3d.dataset.Category;
 import nicok.bac.yolo3d.dataset.Label;
 import nicok.bac.yolo3d.dataset.Model;
@@ -22,21 +21,18 @@ import static java.lang.Runtime.getRuntime;
 import static nicok.bac.yolo3d.preprocessing.RandomTransformation.randomTransformation;
 import static nicok.bac.yolo3d.util.CommandLineUtil.parseCommandLine;
 import static nicok.bac.yolo3d.util.DirectoryUtil.getRepositoryRoot;
+import static nicok.bac.yolo3d.util.DirectoryUtil.requireExtension;
+import static nicok.bac.yolo3d.util.RepositoryPaths.DATASET_PSB;
+import static nicok.bac.yolo3d.util.RepositoryPaths.DATASET_VOX;
 
 public final class AppTrain {
-
-    private static final String VOX_DATASET_PATH = "/dataset-psb-vox";
 
     public static final Options OPTIONS = new Options()
             .addOption("e", "epochs", true, "Number of training epochs")
             .addOption("se", "super-epochs", true, "Number of training set generations")
             .addOption("pd", "prepare-dataset", true, "Regenerate dataset .vox files");
     public static final int INPUT_SIZE = 112;
-    public static final BoundingBox TARGET_BOUNDING_BOX = new BoundingBox(
-            Point.ZERO,
-            new Point(INPUT_SIZE, INPUT_SIZE, INPUT_SIZE)
-    );
-    public static final String PSB_DATASET_PATH = "/dataset-psb";
+    public static final BoundingBox TARGET_BOUNDING_BOX = BoundingBox.fromOrigin(INPUT_SIZE);
 
     public static void main(final String[] args) throws Exception {
         final var rootPath = getRepositoryRoot();
@@ -53,7 +49,7 @@ public final class AppTrain {
             // prepare dataset
             if (prepareDataset) {
                 System.out.println("Preparing Dataset");
-                prepareDataset(rootPath);
+                prepareDataset();
             }
 
             // train
@@ -81,12 +77,10 @@ public final class AppTrain {
         }
     }
 
-    private static void prepareDataset(final String rootPath) throws Exception {
+    private static void prepareDataset() throws Exception {
         final var dataset = new PsbDataset()
-                .withPath(rootPath + PSB_DATASET_PATH)
+                .withPath(DATASET_PSB)
                 .build();
-
-        final var voxDatasetPath = rootPath + VOX_DATASET_PATH + "/";
 
         var currentProgress = 0;
         final var progressBar = new ProgressBar(20, dataset.trainModels().size());
@@ -106,8 +100,8 @@ public final class AppTrain {
                     .orElseThrow();
 
             // save .vox and label files
-            final var voxFileName = voxDatasetPath + model.id() + ".vox";
-            final var txtFileName = voxDatasetPath + model.id() + ".txt";
+            final var voxFileName = DATASET_VOX + "/" + model.id() + ".vox";
+            final var txtFileName = DATASET_VOX + "/" + model.id() + ".txt";
             VoxFileUtil.saveVoxFile(voxFileName, volume);
             saveLabelFile(txtFileName, label, inputFile.getBoundingBox());
 
@@ -126,9 +120,9 @@ public final class AppTrain {
         trainIds.sort(Integer::compare);
         valIds.sort(Integer::compare);
 
-        saveSetFile(voxDatasetPath + "train", trainIds);
-        saveSetFile(voxDatasetPath + "val", valIds);
-        saveCategoriesFile(voxDatasetPath + "categories.txt", dataset.categories());
+        saveSetFile(DATASET_VOX + "/train.txt", trainIds);
+        saveSetFile(DATASET_VOX + "/val.txt", valIds);
+        saveCategoriesFile(DATASET_VOX + "/categories.txt", dataset.categories());
     }
 
     private static void checkInputFileBounds(final InputFile inputFile) {
@@ -147,6 +141,8 @@ public final class AppTrain {
             final String path,
             final List<Category> categories
     ) throws IOException {
+        requireExtension(path, ".txt");
+
         final var content = categories.stream()
                 .map(category -> String.format("%d %s", category.id(), category.name()))
                 .collect(Collectors.joining("\n"));
@@ -160,11 +156,13 @@ public final class AppTrain {
             final String filename,
             final List<Integer> ids
     ) throws IOException {
+        requireExtension(filename, ".txt");
+
         final var content = ids.stream()
                 .map(id -> String.format("%s.vox %s.txt", id, id))
                 .collect(Collectors.joining("\n"));
 
-        try (final var writer = new FileWriter(filename + ".txt")) {
+        try (final var writer = new FileWriter(filename)) {
             writer.write(content);
         }
     }

@@ -12,7 +12,7 @@ public class FitToBox implements Transformation {
 
     @Override
     public Vertex apply(final Vertex vertex) {
-        return Vertex.add(Vertex.mul(scale, vertex), offset);
+        return Vertex.add(Vertex.mul(vertex, scale), offset);
     }
 
     public FitToBox withSourceBoundingBox(final BoundingBox sourceBoundingBox) {

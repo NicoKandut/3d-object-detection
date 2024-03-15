@@ -89,7 +89,7 @@ public class BffReader implements AutoCloseable {
 
     public Vertex readVertex(final long index) {
         ++vertexCacheMisses;
-        final long position = HEADER_BYTES + VERTEX_BYTES * index;
+        final long position = getVertexPosition(index);
         try {
             stream.getChannel().position(position);
             stream.readNBytes(vertexBytes.array(), 0, VERTEX_BYTES);
@@ -120,7 +120,7 @@ public class BffReader implements AutoCloseable {
 
     public Face readFace(final long index) {
         ++faceCacheMisses;
-        final long position = HEADER_BYTES + VERTEX_BYTES * (long) header.vertexCount() + FACE_BYTES * index;
+        final long position = getFacePosition(index, header.vertexCount());
         try {
             stream.getChannel().position(position);
             stream.readNBytes(faceBytes.array(), 0, FACE_BYTES);

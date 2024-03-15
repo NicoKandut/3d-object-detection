@@ -1,6 +1,7 @@
 package nicok.bac.yolo3d.common;
 
 import com.scs.voxlib.Voxel;
+import nicok.bac.yolo3d.off.Vertex;
 import org.tensorflow.Tensor;
 import org.tensorflow.ndarray.BooleanNdArray;
 import org.tensorflow.ndarray.NdArrays;
@@ -17,11 +18,11 @@ public class Volume3D {
 
     public Volume3D(int width, int height, int depth) {
         data = NdArrays.ofBooleans(Shape.of(1, width, height, depth, 1));
-        boundingBox = new BoundingBox(Point.ZERO, new Point(width, height, depth));
+        boundingBox = new BoundingBox(Vertex.ORIGIN, new Vertex(width, height, depth));
     }
 
     public static Volume3D forBoundingBox(final BoundingBox boundingBox) {
-        final var size = Point.round(boundingBox.size());
+        final var size = Vertex.round(boundingBox.size());
         return new Volume3D(
                 (int) size.x(),
                 (int) size.y(),

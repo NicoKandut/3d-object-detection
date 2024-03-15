@@ -1,5 +1,7 @@
 package nicok.bac.yolo3d.common;
 
+import nicok.bac.yolo3d.off.Vertex;
+
 public record ResultBoundingBox(
         Category category,
         double confidence,
@@ -77,8 +79,8 @@ public record ResultBoundingBox(
         final var maxZ = z + d / 2;
 
         return new BoundingBox(
-                new Point(minX, minY, minZ),
-                new Point(maxX, maxY, maxZ)
+                new Vertex(minX, minY, minZ),
+                new Vertex(maxX, maxY, maxZ)
         );
     }
 

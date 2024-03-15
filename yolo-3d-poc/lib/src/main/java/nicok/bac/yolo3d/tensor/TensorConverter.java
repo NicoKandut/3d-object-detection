@@ -9,9 +9,9 @@ public class TensorConverter {
 //            case ResultBoundingBox.class -> new ResultBoundingBox(
 //                    Category.BIKE,
 //                    1.0,
-//                    new BoundingBox(new Point(0,0,0), new Point(1,1,1))
+//                    new BoundingBox(new Vertex(0,0,0), new Vertex(1,1,1))
 //            );
-//            case BoundingBox.class -> new BoundingBox(new Point(2,2,2), new Point(3,3,3));
+//            case BoundingBox.class -> new BoundingBox(new Vertex(2,2,2), new Vertex(3,3,3));
 //            default -> throw new UnsupportedOperationException("Cannot parse " + targetClass.getName() + " from tensor");
 //        };
         return null;

@@ -1,6 +1,7 @@
 package nicok.bac.yolo3d.network;
 
 import nicok.bac.yolo3d.common.*;
+import nicok.bac.yolo3d.off.Vertex;
 import org.tensorflow.SavedModelBundle;
 import org.tensorflow.Tensor;
 import org.tensorflow.ndarray.FloatNdArray;
@@ -19,8 +20,8 @@ public class Yolo3dNetwork implements Network, AutoCloseable {
     }
 
     @Override
-    public Point getExtent() {
-        return new Point(28, 28, 28);
+    public Vertex getExtent() {
+        return new Vertex(28, 28, 28);
     }
 
     @Override

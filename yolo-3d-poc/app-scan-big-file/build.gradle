@@ -1,0 +1,17 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    implementation project(':lib')
+}
+
+application {
+    mainClass = 'nicok.bac.yolo3d.AppScanBigFile'
+}

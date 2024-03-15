@@ -16,7 +16,7 @@ public record VertexMesh(List<TriangleVertex> triangles) {
             final var current = currentY - smallerY.y();
             final var ratio = current / total;
             final var diff = Vertex.sub(biggerY, smallerY);
-            final var result = Vertex.add(smallerY, Vertex.mul(ratio, diff));
+            final var result = Vertex.add(smallerY, Vertex.mul(diff, ratio));
 
             return new Voxelizer.PointX(result.x(), normal.x());
         }
@@ -60,8 +60,8 @@ public record VertexMesh(List<TriangleVertex> triangles) {
                 assert (z2Length >= 0);
                 final var z1Ratio = clamp(z1Current / z1Length, 0, 1);
                 final var z2Ratio = clamp(z2Current / z2Length, 0, 1);
-                final var currentD1 = Vertex.mul(z1Ratio, d1);
-                final var currentD2 = Vertex.mul(z2Ratio, d3);
+                final var currentD1 = Vertex.mul(d1, z1Ratio);
+                final var currentD2 = Vertex.mul(d3, z2Ratio);
                 assert (currentD1.z() >= 0);
                 assert (currentD2.z() >= 0);
                 final var v1 = Vertex.add(origin, currentD1);
@@ -84,8 +84,8 @@ public record VertexMesh(List<TriangleVertex> triangles) {
                 assert (z2Length >= 0);
                 final var z1Ratio = clamp(zCurrent / z1Length, 0, 1);
                 final var z2Ratio = clamp(zCurrent / z2Length, 0, 1);
-                final var currentD1 = Vertex.mul(z1Ratio, d1);
-                final var currentD2 = Vertex.mul(z2Ratio, d2);
+                final var currentD1 = Vertex.mul(d1, z1Ratio);
+                final var currentD2 = Vertex.mul(d2, z2Ratio);
                 assert (currentD1.z() >= 0);
                 assert (currentD2.z() >= 0);
                 final var v1 = Vertex.add(origin, currentD1);

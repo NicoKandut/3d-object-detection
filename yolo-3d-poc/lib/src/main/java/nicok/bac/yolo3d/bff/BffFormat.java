@@ -8,6 +8,14 @@ public final class BffFormat {
     public static final int VERTEX_BYTES = 3 * Double.BYTES;
     public static final int FACE_BYTES = 3 * Integer.BYTES;
 
+    public static long getVertexPosition(final long index) {
+        return HEADER_BYTES + VERTEX_BYTES * index;
+    }
+
+    public static long getFacePosition(final long index, final long vertexCount) {
+        return HEADER_BYTES + VERTEX_BYTES * vertexCount + FACE_BYTES * index;
+    }
+
     private BffFormat() {
     }
 }

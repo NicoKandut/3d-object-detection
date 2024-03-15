@@ -1,5 +1,6 @@
 package nicok.bac.yolo3d.inputfile;
 
+import nicok.bac.yolo3d.bff.BffReader;
 import nicok.bac.yolo3d.common.BoundingBox;
 import nicok.bac.yolo3d.common.Volume3D;
 import nicok.bac.yolo3d.mesh.MeshConverter;
@@ -9,17 +10,35 @@ import nicok.bac.yolo3d.off.VertexMesh;
 import nicok.bac.yolo3d.preprocessing.Transformation;
 import nicok.bac.yolo3d.voxelization.Voxelizer;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-public class OffAdapter2 implements InputFile {
+public class BffAdapter implements InputFile {
 
     private OffMesh mesh;
     private List<VertexMesh.TriangleEvent> triangleEvents;
 
-    public OffAdapter2(final String path) throws Exception {
-        try (final var reader = new OffReader(path)) {
-            mesh = reader.readMesh();
+    public BffAdapter(final String path) throws Exception {
+        try (final var reader = new BffReader(path)) {
+            final var header = reader.readHeader();
+            final var boundingBox = new BoundingBox.Builder();
+            final var vertices = IntStream.range(0, header.vertexCount())
+                    .mapToObj(reader::readVertex)
+                    .peek(boundingBox::withVertex)
+                    .toList();
+            final var faces = IntStream.range(0, header.faceCount())
+                    .mapToObj(reader::readFace)
+                    .toList();
+
+            this.mesh = new OffMesh(
+                    vertices,
+                    faces,
+                    boundingBox.build()
+            );
+
             triangleEvents = getTriangleEvents();
         }
     }

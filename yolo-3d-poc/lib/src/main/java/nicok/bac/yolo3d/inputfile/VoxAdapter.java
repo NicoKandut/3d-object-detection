@@ -4,7 +4,7 @@ import com.scs.voxlib.VoxFile;
 import com.scs.voxlib.VoxReader;
 import com.scs.voxlib.Voxel;
 import nicok.bac.yolo3d.common.BoundingBox;
-import nicok.bac.yolo3d.common.Point;
+import nicok.bac.yolo3d.off.Vertex;
 import nicok.bac.yolo3d.common.Volume3D;
 import nicok.bac.yolo3d.preprocessing.Transformation;
 
@@ -73,8 +73,8 @@ public class VoxAdapter implements InputFile {
     private static BoundingBox getBoundingBox(final VoxFile voxFile) {
         final var size = voxFile.getModelInstances().get(0).model.getSize();
         return new BoundingBox(
-                new Point(0, 0, 0),
-                new Point(size.x, size.y, size.z)
+                new Vertex(0, 0, 0),
+                new Vertex(size.x, size.y, size.z)
         );
     }
 
