@@ -8,8 +8,9 @@ import org.apache.commons.cli.Options;
 import java.io.File;
 import java.io.IOException;
 
-import static java.util.Objects.requireNonNull;
 import static nicok.bac.yolo3d.util.CommandLineUtil.parseCommandLine;
+import static nicok.bac.yolo3d.util.DirectoryUtil.requireExtension;
+import static nicok.bac.yolo3d.util.StringUtil.requireNonBlank;
 
 public class AppOffToBff {
 
@@ -17,16 +18,13 @@ public class AppOffToBff {
             .addRequiredOption("i", "input", true, "Input file.")
             .addRequiredOption("o", "output", true, "Output file.");
 
-    /**
-     * Usage: :app-off-to-bff:run --args='-i C:/src/bac/dataset-psb/db/0/m5/m5.off -o .'
-     */
     public static void main(final String[] args) throws Exception {
         final var commandLine = parseCommandLine(args, OPTIONS);
         final var inputPath = commandLine.getOptionValue("input");
         final var outputTarget = commandLine.getOptionValue("output");
 
-        requireNonNull(inputPath);
-        requireNonNull(outputTarget);
+        requireNonBlank(inputPath);
+        requireNonBlank(outputTarget);
         requireExtension(inputPath, ".off");
 
         final var outputPath = getOutputPath(outputTarget, inputPath);
@@ -51,12 +49,6 @@ public class AppOffToBff {
         }
 
         System.out.println("Saved");
-    }
-
-    private static void requireExtension(final String path, final String extension) {
-        if (!path.endsWith(extension)) {
-            throw new IllegalArgumentException("File must be of type .off");
-        }
     }
 
     private static String getOutputPath(

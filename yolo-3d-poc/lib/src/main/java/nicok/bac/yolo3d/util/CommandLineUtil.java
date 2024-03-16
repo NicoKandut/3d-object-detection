@@ -63,4 +63,23 @@ public final class CommandLineUtil {
 
         return Pair.create(min, max);
     }
+
+    public static int parseOptionalInt(
+            final CommandLine commandLine,
+            final String argumentName,
+            final int defaultValue
+    ) {
+        final var stringValue = commandLine.getOptionValue(argumentName);
+
+        if (stringValue == null) {
+            return defaultValue;
+        }
+
+        try {
+            return Integer.parseInt(stringValue);
+        } catch (final NumberFormatException e) {
+            System.out.printf("Warning: Argument '%s=%s' is invalid and has been discarded.", argumentName, stringValue);
+            return defaultValue;
+        }
+    }
 }

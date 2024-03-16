@@ -27,9 +27,6 @@ public class AppCreateBigFile {
             .addRequiredOption("ms", "model-size", true, "Size of the models in format min,max")
             .addRequiredOption("s", "size", true, "Size of the file in format x,y,z");
 
-    /**
-     * Usage: :app-create-big-file:run
-     */
     public static void main(final String[] args) throws Exception {
 
         // parse CLI arguments

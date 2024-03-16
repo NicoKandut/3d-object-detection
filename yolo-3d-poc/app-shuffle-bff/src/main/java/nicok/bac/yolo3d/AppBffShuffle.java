@@ -14,6 +14,7 @@ import java.util.stream.IntStream;
 
 import static java.util.Objects.requireNonNull;
 import static nicok.bac.yolo3d.util.CommandLineUtil.parseCommandLine;
+import static nicok.bac.yolo3d.util.DirectoryUtil.requireExtension;
 
 public class AppBffShuffle {
 
@@ -81,11 +82,5 @@ public class AppBffShuffle {
         }
 
         System.out.println("DONE");
-    }
-
-    private static void requireExtension(final String path, final String extension) {
-        if (!path.endsWith(extension)) {
-            throw new IllegalArgumentException("File must be of type .off");
-        }
     }
 }

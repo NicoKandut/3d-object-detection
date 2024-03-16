@@ -5,6 +5,8 @@ import org.apache.commons.cli.Options;
 
 import static java.util.Objects.requireNonNull;
 import static nicok.bac.yolo3d.util.CommandLineUtil.parseCommandLine;
+import static nicok.bac.yolo3d.util.DirectoryUtil.requireExtension;
+import static nicok.bac.yolo3d.util.StringUtil.requireNonBlank;
 
 public class AppBffTraverse {
 
@@ -18,7 +20,7 @@ public class AppBffTraverse {
         final var commandLine = parseCommandLine(args, OPTIONS);
         final var inputPath = commandLine.getOptionValue("input");
 
-        requireNonNull(inputPath);
+        requireNonBlank(inputPath);
         requireExtension(inputPath, ".bff");
 
         System.out.println("Correlating Faces And Vertices");
@@ -37,17 +39,6 @@ public class AppBffTraverse {
             final var vertexRepeatAccesses = bffReader.vertexCacheQueries() - header.vertexCount();
             final var vertexRatio = (double) vertexCacheHits / (double) vertexRepeatAccesses * 100.0;
             System.out.printf("Vertex cache hits: %d / %d. (%.2f%%)\n", vertexCacheHits, vertexRepeatAccesses, vertexRatio);
-
-//            final var faceCacheHits = bffReader.faceCacheHits();
-//            final var faceRepeatAccesses = bffReader.faceCacheQueries() - header.faceCount();
-//            final var faceRatio = (double) faceCacheHits / (double) faceRepeatAccesses * 100.0;
-//            System.out.printf("  Face cache hits: %d / %d. (%.2f%%)\n", faceCacheHits, faceRepeatAccesses, faceRatio);
-        }
-    }
-
-    private static void requireExtension(final String path, final String extension) {
-        if (!path.endsWith(extension)) {
-            throw new IllegalArgumentException("File must be of type .off");
         }
     }
 }

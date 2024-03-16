@@ -77,6 +77,15 @@ public record BoundingBox(
                 vertex.z() >= min.z() && vertex.z() < max.z();
     }
 
+    public boolean contains(final BoundingBox other) {
+        return this.min().x() <= other.min().x() &&
+                this.min().y() <= other.min().y() &&
+                this.min().z() <= other.min().z() &&
+                this.max().x() >= other.max().x() &&
+                this.max().x() >= other.max().y() &&
+                this.max().x() >= other.max().z();
+    }
+
     /**
      * Returns the center of the bounding box.
      */
