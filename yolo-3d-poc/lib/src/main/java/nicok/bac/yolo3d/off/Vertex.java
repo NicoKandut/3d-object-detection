@@ -50,6 +50,14 @@ public record Vertex(
         );
     }
 
+    public static Vertex componentWiseDiv(final Vertex a, final Vertex b) {
+        return new Vertex(
+                a.x / b.x,
+                a.y / b.y,
+                a.z / b.z
+        );
+    }
+
     public static Vertex min(final Vertex a, final Vertex b) {
         return new Vertex(
                 Double.min(a.x, b.x),
@@ -95,6 +103,14 @@ public record Vertex(
                 Math.round(point.x()),
                 Math.round(point.y()),
                 Math.round(point.z())
+        );
+    }
+
+    public static Vertex ceil(final Vertex point) {
+        return new Vertex(
+                Math.ceil(point.x()),
+                Math.ceil(point.y()),
+                Math.ceil(point.z())
         );
     }
 

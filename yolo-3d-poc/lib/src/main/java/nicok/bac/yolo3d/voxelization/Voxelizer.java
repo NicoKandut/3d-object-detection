@@ -86,7 +86,7 @@ public class Voxelizer {
 
                     // filled for large bodies, pointsInPixel for more solid surfaces
                     if (fillDepth > 0 || override) {
-                        volume.set(volX, volY, volZ, true);
+                        volume.set(volX, volY, volZ, 1f);
                     }
                     ++volX;
                 }

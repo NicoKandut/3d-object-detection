@@ -48,7 +48,7 @@ public class VoxAdapter implements InputFile {
                     final var x = v.getPosition().y - (int) target.min().y();
                     final var y = (int) target.size().z() - (v.getPosition().z % (int) target.size().z()) - 1;
                     final var z = v.getPosition().x - (int) target.min().x();
-                    volume.set(x, y, z, true);
+                    volume.set(x, y, z, 1f);
                 });
 
         return volume;

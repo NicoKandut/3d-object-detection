@@ -6,6 +6,7 @@ import nicok.bac.yolo3d.common.ScanResult;
 import nicok.bac.yolo3d.inputfile.InputFile;
 import nicok.bac.yolo3d.network.Network;
 import nicok.bac.yolo3d.off.Vertex;
+import nicok.bac.yolo3d.terminal.ProgressBar;
 
 import java.util.ArrayList;
 
@@ -16,40 +17,59 @@ public record Scanner() {
             final Network network
     ) {
         final var extent = inputFile.getBoundingBox();
-        final var kernelSize = network.getExtent();
-        final var objects = new ArrayList<ResultBoundingBox>();
-
         System.out.printf("File size %s\n", extent.size());
 
-        final var scansWidth = Math.ceil(extent.size().x() / network.getExtent().x());
-        final var scansHeight = Math.ceil(extent.size().y() / network.getExtent().y());
-        final var scansDepth = Math.ceil(extent.size().z() / network.getExtent().z());
+        final var kernelSize = network.getExtent();
+        final var stride = Vertex.div(kernelSize, 2);
 
-        final var estimatedScans = scansWidth * scansHeight * scansDepth;
+        final var nrSteps = getNumberOfScans(extent, kernelSize, stride);
+        final var nrScans = (long) (nrSteps.x() * nrSteps.y() * nrSteps.z());
+        var currentScan = 1;
 
-        var nrScans = 0;
+        System.out.println("Scanning file");
+        final var progressBar = new ProgressBar(20, nrScans);
+        final var objects = new ArrayList<ResultBoundingBox>();
 
-        for (var z = extent.min().z(); z < extent.max().z(); z += kernelSize.z()) {
-            for (var y = extent.min().y(); y < extent.max().y(); y += kernelSize.y()) {
-                for (var x = extent.min().x(); x < extent.max().x(); x += kernelSize.x()) {
+        var x = extent.min().x();
+        var y = extent.min().y();
+        var z = extent.min().z();
+        for (var indexZ = 0; indexZ < nrSteps.z(); ++indexZ) {
+            for (var indexY = 0; indexY < nrSteps.y(); ++indexY) {
+                for (var indexX = 0; indexX < nrSteps.x(); ++indexX) {
                     final var start = new Vertex(x, y, z);
-                    final var box = new BoundingBox(start, Vertex.add(start, kernelSize));
+                    final var end = Vertex.add(start, kernelSize);
+                    final var box = new BoundingBox(start, end);
                     final var volume = inputFile.read(box);
-
                     final var boundingBoxes = network.compute(box, volume);
 
                     objects.addAll(boundingBoxes);
-                    ++nrScans;
 
-                    System.out.printf("Scan %d of %d: %.0f%%\n", nrScans, (int) estimatedScans, nrScans / estimatedScans * 100);
+                    progressBar.printProgress(currentScan);
+                    ++currentScan;
+                    x += stride.x();
+                    y += stride.y();
+                    z += stride.z();
                 }
             }
         }
 
-//        System.out.printf("Number of scans %d\n", nrScans);
-
         System.out.printf("Got %d bounding boxes to evaluate\n", objects.size());
 
         return new ScanResult(objects);
+    }
+
+    private Vertex getNumberOfScans(
+            final BoundingBox extent,
+            final Vertex kernelSize,
+            final Vertex stride
+    ) {
+        final var adjustedSize = Vertex.componentWiseMultiply(Vertex.ceil(Vertex.componentWiseDiv(extent.size(), stride)), stride);
+        final var adjustedExtent = new BoundingBox(extent.min(), Vertex.add(extent.min(), adjustedSize));
+
+        final var x = (adjustedExtent.size().x() - kernelSize.x()) / stride.x() + 1;
+        final var y = (adjustedExtent.size().y() - kernelSize.y()) / stride.y() + 1;
+        final var z = (adjustedExtent.size().z() - kernelSize.z()) / stride.z() + 1;
+
+        return new Vertex(x, y, z);
     }
 }

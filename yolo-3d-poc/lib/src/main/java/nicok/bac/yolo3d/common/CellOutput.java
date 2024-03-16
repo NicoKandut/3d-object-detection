@@ -13,7 +13,6 @@ public record CellOutput(
         float confidence
 ) {
     public static CellOutput fromOutputArray(float[] output) {
-        assert(output.length == 6 + 1 + Category.values().length);
         return new CellOutput(
                 copyOfRange(output, 0, 2),
                 output[2],

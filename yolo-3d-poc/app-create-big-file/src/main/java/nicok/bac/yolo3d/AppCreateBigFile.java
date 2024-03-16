@@ -6,6 +6,7 @@ import nicok.bac.yolo3d.dataset.PsbDataset;
 import nicok.bac.yolo3d.off.Face;
 import nicok.bac.yolo3d.off.OffReader;
 import nicok.bac.yolo3d.preprocessing.FitToBox;
+import nicok.bac.yolo3d.terminal.ProgressBar;
 import nicok.bac.yolo3d.util.RepositoryPaths;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
@@ -45,6 +46,8 @@ public class AppCreateBigFile {
 
         final var random = new Random();
 
+        System.out.println("Loading models");
+
         // choose n models
         final var models = IntStream.range(0, n)
                 .map(i -> random.nextInt(dataset.trainModels().size()))
@@ -64,6 +67,8 @@ public class AppCreateBigFile {
         final var totalVertexCount = modelHeaders.stream().mapToInt(Integer::intValue).sum();
 
         // create big file
+        System.out.println("Placing models into big file");
+        final var progressBar = new ProgressBar(20, n);
         final var resultBoundingBox = BoundingBox.fromOrigin(size);
         try (final var resultWriter = new BffWriterRAF(outputPath)) {
 
@@ -109,6 +114,7 @@ public class AppCreateBigFile {
                 }
 
                 vertexIdOffset += modelHeaders.get(i);
+                progressBar.printProgress(i + 1);
             }
 
             resultWriter.writeHeader();

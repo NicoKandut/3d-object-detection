@@ -41,7 +41,6 @@ public final class RandomTransformation {
         final var shiftX = random.nextDouble() * availableSpace.x();
         final var shiftY = random.nextDouble() * availableSpace.y();
         final var shiftZ = random.nextDouble() * availableSpace.z();
-        System.out.printf("Shift : %3.2f, %3.2f, %3.2f \n", shiftX, shiftY, shiftZ);
         return new LinearTransformation.Builder()
                 .shift(new Vertex(shiftX, shiftY, shiftZ))
                 .build();

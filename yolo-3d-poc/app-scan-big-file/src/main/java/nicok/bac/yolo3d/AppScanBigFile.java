@@ -11,9 +11,7 @@ import static nicok.bac.yolo3d.util.CommandLineUtil.parseCommandLine;
 public class AppScanBigFile {
 
     public static final Options OPTIONS = new Options()
-            .addRequiredOption("i", "input", true, "Input file.")
-            .addRequiredOption("s", "size", true, "Size of the file in format x,y,z");
-
+            .addRequiredOption("i", "input", true, "Input file.");
     public static void main(final String[] args) throws Exception {
 
         // parse CLI arguments
@@ -31,8 +29,9 @@ public class AppScanBigFile {
         final var result = scanner.scan(inputFile, network);
 
         // refine results
-        final var filter = new BoxFilter(0.5, 0.5);
+        final var filter = new BoxFilter(0.1, 0.5);
         final var boxes = filter.filter(result.objects());
+        System.out.printf("%d boxes survived\n", boxes.size());
 
         for (final var box : boxes) {
             System.out.printf("  - %s\n", box);

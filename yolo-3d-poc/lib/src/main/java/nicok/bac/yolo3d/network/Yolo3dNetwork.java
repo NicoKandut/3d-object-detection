@@ -21,7 +21,7 @@ public class Yolo3dNetwork implements Network, AutoCloseable {
 
     @Override
     public Vertex getExtent() {
-        return new Vertex(28, 28, 28);
+        return new Vertex(112, 112, 112);
     }
 
     @Override

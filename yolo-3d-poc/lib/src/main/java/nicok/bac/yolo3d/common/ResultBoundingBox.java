@@ -2,11 +2,17 @@ package nicok.bac.yolo3d.common;
 
 import nicok.bac.yolo3d.off.Vertex;
 
+import static java.util.Objects.requireNonNull;
+
 public record ResultBoundingBox(
-        Category category,
+        int category,
         double confidence,
         BoundingBox boundingBox
 ) {
+    public ResultBoundingBox {
+        requireNonNull(boundingBox);
+    }
+
     public static ResultBoundingBox fromOutput(
             final CellOutput output,
             final BoundingBox frame,
@@ -35,7 +41,7 @@ public record ResultBoundingBox(
     }
 
 
-    private static Category getBestCategory(float[] class_confidence) {
+    private static int getBestCategory(final float[] class_confidence) {
         var max_value = -1.0f;
         var max_index = -1;
 
@@ -47,9 +53,7 @@ public record ResultBoundingBox(
 
         }
 
-        assert (max_index >= 0 && max_index < Category.values().length);
-
-        return Category.values()[max_index];
+        return max_index;
     }
 
     private static CellOutput from_cell_repr(
