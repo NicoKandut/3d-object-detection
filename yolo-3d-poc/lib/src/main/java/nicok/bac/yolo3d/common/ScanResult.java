@@ -1,8 +1,8 @@
 package nicok.bac.yolo3d.common;
 
-import java.util.List;
+import nicok.bac.yolo3d.collection.PersistentResultBoundingBoxList;
 
 public record ScanResult(
-       List<ResultBoundingBox> objects
+        PersistentResultBoundingBoxList boxes
 ) {
 }

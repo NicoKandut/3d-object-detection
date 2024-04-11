@@ -1,6 +1,8 @@
 package nicok.bac.yolo3d.common;
 
-import nicok.bac.yolo3d.off.Vertex;
+import nicok.bac.yolo3d.boundingbox.BoundingBox;
+import nicok.bac.yolo3d.mesh.Vertex;
+import nicok.bac.yolo3d.network.Network;
 
 import static java.util.Objects.requireNonNull;
 
@@ -13,7 +15,9 @@ public record ResultBoundingBox(
         requireNonNull(boundingBox);
     }
 
+    // TODO: move this out of here
     public static ResultBoundingBox fromOutput(
+            final Network network,
             final CellOutput output,
             final BoundingBox frame,
             final int i,
@@ -25,13 +29,13 @@ public record ResultBoundingBox(
                 i, j, k,
                 output,
                 7,
-                28
+                (int) network.size().x() // only works for cubes
         );
         final var relativeBox = xyzwhd_to_minmax(
                 scaledOutput.x(), scaledOutput.y(), scaledOutput.z(),
                 scaledOutput.w(), scaledOutput.h(), scaledOutput.d()
         );
-        final var absoluteBox = BoundingBox.addOffset(relativeBox, frame.min());
+        final var absoluteBox = BoundingBox.withOffset(relativeBox, frame.min());
 
         return new ResultBoundingBox(
                 bestCategory,

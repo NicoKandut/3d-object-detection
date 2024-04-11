@@ -1,10 +1,10 @@
 package nicok.bac.yolo3d;
 
-import nicok.bac.yolo3d.bff.BffReader;
+import nicok.bac.yolo3d.mesh.Vertex;
+import nicok.bac.yolo3d.storage.bff.BffReaderRAF;
 import org.apache.commons.cli.Options;
 
-import static java.util.Objects.requireNonNull;
-import static nicok.bac.yolo3d.util.CommandLineUtil.parseCommandLine;
+import static nicok.bac.yolo3d.terminal.CommandLineUtil.parseCommandLine;
 import static nicok.bac.yolo3d.util.DirectoryUtil.requireExtension;
 import static nicok.bac.yolo3d.util.StringUtil.requireNonBlank;
 
@@ -24,10 +24,10 @@ public class AppBffTraverse {
         requireExtension(inputPath, ".bff");
 
         System.out.println("Correlating Faces And Vertices");
-        try (final var bffReader = new BffReader(inputPath)) {
+        try (final var bffReader = new BffReaderRAF(inputPath)) {
 
             // read header
-            final var header = bffReader.readHeader();
+            final var header = bffReader.header();
             System.out.println(header);
 
             // iterate faces and vertices
@@ -35,10 +35,11 @@ public class AppBffTraverse {
                     .flatMap(face -> face.vertexIndices().stream())
                     .forEach(bffReader::getVertex);
 
-            final var vertexCacheHits = bffReader.vertexCacheHits();
-            final var vertexRepeatAccesses = bffReader.vertexCacheQueries() - header.vertexCount();
-            final var vertexRatio = (double) vertexCacheHits / (double) vertexRepeatAccesses * 100.0;
-            System.out.printf("Vertex cache hits: %d / %d. (%.2f%%)\n", vertexCacheHits, vertexRepeatAccesses, vertexRatio);
+            bffReader.vertices()
+                    .map(Vertex::z)
+                    .forEach(System.out::println);
+
+            bffReader.printStatistic();
         }
     }
 }

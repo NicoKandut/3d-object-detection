@@ -1,6 +1,6 @@
 package nicok.bac.yolo3d;
 
-import nicok.bac.yolo3d.common.BoundingBox;
+import nicok.bac.yolo3d.boundingbox.BoundingBox;
 import nicok.bac.yolo3d.dataset.Model;
 import nicok.bac.yolo3d.dataset.PsbDataset;
 import nicok.bac.yolo3d.inputfile.InputFileProvider;
@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
 import static java.lang.Runtime.getRuntime;
 import static nicok.bac.yolo3d.dataset.VoxDatasetUtils.*;
 import static nicok.bac.yolo3d.preprocessing.RandomTransformation.randomTransformation;
-import static nicok.bac.yolo3d.util.CommandLineUtil.parseCommandLine;
-import static nicok.bac.yolo3d.util.CommandLineUtil.parseOptionalInt;
+import static nicok.bac.yolo3d.terminal.CommandLineUtil.parseCommandLine;
+import static nicok.bac.yolo3d.terminal.CommandLineUtil.parseOptionalInt;
 import static nicok.bac.yolo3d.util.RepositoryPaths.*;
 
 public final class AppTrain {

@@ -1,24 +1,23 @@
 package nicok.bac.yolo3d;
 
-import nicok.bac.yolo3d.bff.BffWriterRAF;
-import nicok.bac.yolo3d.common.BoundingBox;
+import nicok.bac.yolo3d.boundingbox.BoundingBox;
 import nicok.bac.yolo3d.dataset.PsbDataset;
-import nicok.bac.yolo3d.off.Face;
-import nicok.bac.yolo3d.off.OffReader;
+import nicok.bac.yolo3d.mesh.Face;
 import nicok.bac.yolo3d.preprocessing.FitToBox;
+import nicok.bac.yolo3d.storage.bff.BffWriterRAF;
+import nicok.bac.yolo3d.storage.off.OffReader;
 import nicok.bac.yolo3d.terminal.ProgressBar;
 import nicok.bac.yolo3d.util.RepositoryPaths;
-import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 
+import java.io.File;
 import java.util.Random;
 import java.util.stream.IntStream;
 
 import static java.lang.Integer.parseInt;
 import static nicok.bac.yolo3d.preprocessing.RandomTransformation.getRandomRotation;
 import static nicok.bac.yolo3d.preprocessing.RandomTransformation.getRandomShift;
-import static nicok.bac.yolo3d.util.CommandLineUtil.*;
-import static nicok.bac.yolo3d.util.DirectoryUtil.requireExtension;
+import static nicok.bac.yolo3d.terminal.CommandLineUtil.*;
 
 public class AppCreateBigFile {
 
@@ -32,7 +31,7 @@ public class AppCreateBigFile {
 
         // parse CLI arguments
         final var commandLine = parseCommandLine(args, OPTIONS);
-        final var outputPath = getOutputPath(commandLine);
+        final var outputPath = parseFilePath(commandLine, "output", ".bff", ".off");
         final var size = parsePoint(commandLine, "size");
         final var modelSize = parseDoubleRange(commandLine, "model-size");
         final var minModelSize = modelSize.getFirst();
@@ -54,6 +53,7 @@ public class AppCreateBigFile {
                 .mapToObj(modelIndex -> dataset.trainModels().get(modelIndex))
                 .toList();
 
+        // read their headers
         final var modelHeaders = models.stream()
                 .map(model -> {
                     try (final var modelReader = new OffReader(model.path())) {
@@ -64,13 +64,13 @@ public class AppCreateBigFile {
                 })
                 .toList();
 
-        final var totalVertexCount = modelHeaders.stream().mapToInt(Integer::intValue).sum();
+        final var totalVertexCount = modelHeaders.stream().mapToLong(Long::longValue).sum();
 
         // create big file
         System.out.println("Placing models into big file");
         final var progressBar = new ProgressBar(20, n);
         final var resultBoundingBox = BoundingBox.fromOrigin(size);
-        try (final var resultWriter = new BffWriterRAF(outputPath)) {
+        try (final var resultWriter = new BffWriterRAF(outputPath, 4, 8)) {
 
             var vertexIdOffset = 0;
 
@@ -103,12 +103,12 @@ public class AppCreateBigFile {
                     }
                     final var currentVertexIdOffset = vertexIdOffset;
                     for (final var face : mesh.faces()) {
+                        // adjust vertex indices for the new file
                         final var adjustedFace = new Face(
                                 face.vertexIndices().stream()
                                         .map(index -> currentVertexIdOffset + index)
                                         .toList()
                         );
-
                         resultWriter.writeFace(adjustedFace, totalVertexCount);
                     }
                 }
@@ -119,11 +119,7 @@ public class AppCreateBigFile {
 
             resultWriter.writeHeader();
         }
-    }
 
-    private static String getOutputPath(CommandLine commandLine) {
-        final var outputPath = commandLine.getOptionValue("output");
-        requireExtension(outputPath, ".off", ".bff");
-        return outputPath;
+        System.out.printf("Done. File saved at: %s\n", new File(outputPath).getAbsolutePath());
     }
 }

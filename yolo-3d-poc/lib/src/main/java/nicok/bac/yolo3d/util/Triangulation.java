@@ -1,27 +1,35 @@
 package nicok.bac.yolo3d.util;
 
-import nicok.bac.yolo3d.off.Face;
+import nicok.bac.yolo3d.mesh.Face;
+import nicok.bac.yolo3d.mesh.TriangleIndex;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
+import java.util.stream.Stream;
 
 public final class Triangulation {
 
-    private Triangulation() {
+    public static Stream<TriangleIndex> shell(final Face face) {
+        final var indices = face.vertexIndices();
+        final var vertexCount = indices.size();
+
+        if (vertexCount < 3) {
+            throw new IllegalArgumentException("A face must have at least 3 vertices");
+        }
+
+        final var triangles = new TriangleIndex[vertexCount - 2];
+        final var i0 = 0;
+        for (int i = 0; i < vertexCount - 2; i++) {
+            triangles[i] = new TriangleIndex(
+                    indices.get(i0),
+                    indices.get(i + 1),
+                    indices.get(i + 2)
+            );
+        }
+
+        return Arrays.stream(triangles);
     }
 
-    public static List<Face> shell(final Face face) {
-        final var indices = face.vertexIndices();
-        final var i0 = 0;
-        final var faces = new ArrayList<Face>(indices.size() - 2);
-        for (var i1 = 1; i1 < indices.size() - 1; ++i1) {
-            final var i2 = i1 + 1;
-            faces.add(new Face(List.of(
-                    indices.get(i0),
-                    indices.get(i1),
-                    indices.get(i2)
-            )));
-        }
-        return faces;
+    private Triangulation() {
+        throw new UnsupportedOperationException("Utility class should not be instantiated");
     }
 }

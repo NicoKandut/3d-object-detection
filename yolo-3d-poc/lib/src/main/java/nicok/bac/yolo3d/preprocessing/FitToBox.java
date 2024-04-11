@@ -1,7 +1,7 @@
 package nicok.bac.yolo3d.preprocessing;
 
-import nicok.bac.yolo3d.common.BoundingBox;
-import nicok.bac.yolo3d.off.Vertex;
+import nicok.bac.yolo3d.boundingbox.BoundingBox;
+import nicok.bac.yolo3d.mesh.Vertex;
 
 public class FitToBox implements Transformation {
 
@@ -12,21 +12,29 @@ public class FitToBox implements Transformation {
 
     @Override
     public Vertex apply(final Vertex vertex) {
-        return Vertex.add(Vertex.mul(vertex, scale), offset);
+        final var fromOrigin = Vertex.sub(vertex, this.sourceBoundingBox.min());
+        final var scaled = Vertex.mul(fromOrigin, scale);
+        final var fromTargetMin = Vertex.add(scaled, this.targetBoundingBox.min());
+        final var transformed = Vertex.add(fromTargetMin, this.offset);
+
+        return transformed;
     }
 
     public FitToBox withSourceBoundingBox(final BoundingBox sourceBoundingBox) {
         this.sourceBoundingBox = sourceBoundingBox;
-        recalculateScale();
-        recalculateOffset();
+        update();
         return this;
     }
 
     public FitToBox withTargetBoundingBox(final BoundingBox targetBoundingBox) {
         this.targetBoundingBox = targetBoundingBox;
+        update();
+        return this;
+    }
+
+    private void update() {
         recalculateScale();
         recalculateOffset();
-        return this;
     }
 
     private void recalculateScale() {
@@ -46,10 +54,6 @@ public class FitToBox implements Transformation {
             return;
         }
 
-        final var offsetX = (targetBoundingBox.min().x() - sourceBoundingBox.min().x() * scale) + (targetBoundingBox.size().x() - sourceBoundingBox.size().x() * scale) / 2;
-        final var offsetY = (targetBoundingBox.min().y() - sourceBoundingBox.min().y() * scale) + (targetBoundingBox.size().y() - sourceBoundingBox.size().y() * scale) / 2;
-        final var offsetZ = (targetBoundingBox.min().z() - sourceBoundingBox.min().z() * scale) + (targetBoundingBox.size().z() - sourceBoundingBox.size().z() * scale) / 2;
-
-        this.offset = new Vertex(offsetX, offsetY, offsetZ);
+        this.offset = Vertex.div(Vertex.sub(targetBoundingBox.size(), Vertex.mul(sourceBoundingBox.size(), scale)), 2);
     }
 }

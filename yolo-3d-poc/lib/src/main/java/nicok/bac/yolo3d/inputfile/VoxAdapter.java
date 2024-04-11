@@ -3,10 +3,11 @@ package nicok.bac.yolo3d.inputfile;
 import com.scs.voxlib.VoxFile;
 import com.scs.voxlib.VoxReader;
 import com.scs.voxlib.Voxel;
-import nicok.bac.yolo3d.common.BoundingBox;
-import nicok.bac.yolo3d.off.Vertex;
+import nicok.bac.yolo3d.boundingbox.BoundingBox;
 import nicok.bac.yolo3d.common.Volume3D;
+import nicok.bac.yolo3d.mesh.Vertex;
 import nicok.bac.yolo3d.preprocessing.Transformation;
+import nicok.bac.yolo3d.storage.chunkstore.ChunkStore;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -39,7 +40,9 @@ public class VoxAdapter implements InputFile {
         );
 
         voxels.stream()
-                .filter(voxel -> target.contains(voxel.getPosition()))
+                .filter(voxel -> target.contains(
+                        new Vertex(voxel.getPosition().x, voxel.getPosition().y, voxel.getPosition().z)
+                ))
                 .forEach(v -> {
                     final var material = palette[v.getColourIndex()];
                     final var r = (float) (material & 0xFF) / 255f;
@@ -55,27 +58,30 @@ public class VoxAdapter implements InputFile {
     }
 
     @Override
-    public InputFile withPreprocessing(final Transformation preProcessing) {
+    public ChunkStore createChunkStore() {
+        return null;
+    }
+
+    @Override
+    public InputFile transform(final Transformation transformation) {
         final var boundingBoxBuilder = new BoundingBox.Builder();
         this.voxels = this.voxels.stream()
-                .map(preProcessing::apply)
-                .peek(boundingBoxBuilder::withVoxel)
+                .map(transformation::apply)
+                .peek(voxel -> boundingBoxBuilder.withVertex(
+                        new Vertex(voxel.getPosition().x, voxel.getPosition().y, voxel.getPosition().z)
+                ))
                 .toList();
         this.boundingBox = boundingBoxBuilder.build();
         return this;
     }
 
     private static List<Voxel> getVoxels(final VoxFile voxFile) {
-        assert (voxFile.getModelInstances().size() == 1);
         return Arrays.stream(voxFile.getModelInstances().get(0).model.getVoxels()).toList();
     }
 
     private static BoundingBox getBoundingBox(final VoxFile voxFile) {
         final var size = voxFile.getModelInstances().get(0).model.getSize();
-        return new BoundingBox(
-                new Vertex(0, 0, 0),
-                new Vertex(size.x, size.y, size.z)
-        );
+        return BoundingBox.fromOrigin(new Vertex(size.x, size.y, size.z));
     }
 
     @Override

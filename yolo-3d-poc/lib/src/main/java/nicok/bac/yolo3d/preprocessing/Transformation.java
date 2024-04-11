@@ -1,7 +1,7 @@
 package nicok.bac.yolo3d.preprocessing;
 
 import com.scs.voxlib.Voxel;
-import nicok.bac.yolo3d.off.Vertex;
+import nicok.bac.yolo3d.mesh.Vertex;
 
 /**
  * A transformation that can be applied to a vertex or a voxel.

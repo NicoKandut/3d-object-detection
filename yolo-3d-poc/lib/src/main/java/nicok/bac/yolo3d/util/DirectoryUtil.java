@@ -1,10 +1,10 @@
 package nicok.bac.yolo3d.util;
 
-import nicok.bac.yolo3d.inputfile.IllegalPathException;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 
 import static java.lang.Runtime.getRuntime;
@@ -18,8 +18,7 @@ public final class DirectoryUtil {
     }
 
     public static String getFilename(final String path) {
-        final var pathSegments = path.split("/");
-        return stripExtension(pathSegments[pathSegments.length - 1]);
+        return stripExtension(Path.of(path).getFileName().toString());
     }
 
     public static String getExtension(final String path) {
@@ -56,6 +55,20 @@ public final class DirectoryUtil {
             return output.trim();
         } catch (final IOException exception) {
             return null;
+        }
+    }
+
+    public static void cleanDirectory(final String outputDir) throws IOException {
+        final var path = Path.of(outputDir);
+        Files.createDirectories(path);
+        try (final var files = Files.walk(path, 1)) {
+            files.filter(Files::isRegularFile)
+                    .map(Path::toFile)
+                    .forEach(file -> {
+                        if (!file.delete()) {
+                            throw new IllegalStateException("Could not delete file: " + file);
+                        }
+                    });
         }
     }
 

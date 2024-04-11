@@ -12,6 +12,7 @@
             <option value="$PROJECT_DIR$/app-off-to-bff" />
             <option value="$PROJECT_DIR$/app-scan-big-file" />
             <option value="$PROJECT_DIR$/app-shuffle-bff" />
+            <option value="$PROJECT_DIR$/app-sort-bff" />
             <option value="$PROJECT_DIR$/app-stats-dataset-psb" />
             <option value="$PROJECT_DIR$/app-train" />
             <option value="$PROJECT_DIR$/app-traverse-bff-file" />

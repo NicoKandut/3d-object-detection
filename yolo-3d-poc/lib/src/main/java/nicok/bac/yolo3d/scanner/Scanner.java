@@ -1,25 +1,26 @@
 package nicok.bac.yolo3d.scanner;
 
-import nicok.bac.yolo3d.common.BoundingBox;
-import nicok.bac.yolo3d.common.ResultBoundingBox;
+import nicok.bac.yolo3d.boundingbox.BoundingBox;
+import nicok.bac.yolo3d.collection.PersistentResultBoundingBoxList;
 import nicok.bac.yolo3d.common.ScanResult;
 import nicok.bac.yolo3d.inputfile.InputFile;
+import nicok.bac.yolo3d.mesh.Vertex;
 import nicok.bac.yolo3d.network.Network;
-import nicok.bac.yolo3d.off.Vertex;
 import nicok.bac.yolo3d.terminal.ProgressBar;
+import nicok.bac.yolo3d.util.RepositoryPaths;
 
-import java.util.ArrayList;
+import java.io.IOException;
 
 public record Scanner() {
 
     public ScanResult scan(
             final InputFile inputFile,
             final Network network
-    ) {
+    ) throws Exception {
         final var extent = inputFile.getBoundingBox();
         System.out.printf("File size %s\n", extent.size());
 
-        final var kernelSize = network.getExtent();
+        final var kernelSize = network.size();
         final var stride = Vertex.div(kernelSize, 2);
 
         final var nrSteps = getNumberOfScans(extent, kernelSize, stride);
@@ -28,7 +29,9 @@ public record Scanner() {
 
         System.out.println("Scanning file");
         final var progressBar = new ProgressBar(20, nrScans);
-        final var objects = new ArrayList<ResultBoundingBox>();
+        final var boxesPerScan = 7 * 7 * 7;
+        final var boxWriter = PersistentResultBoundingBoxList.writer(RepositoryPaths.BOX_DATA_TEMP + "/scan.boxes");
+        var nrBoxes = 0;
 
         var x = extent.min().x();
         var y = extent.min().y();
@@ -42,9 +45,10 @@ public record Scanner() {
                     final var volume = inputFile.read(box);
                     final var boundingBoxes = network.compute(box, volume);
 
-                    objects.addAll(boundingBoxes);
-
+                    boundingBoxes.forEach(boxWriter::write);
                     progressBar.printProgress(currentScan);
+                    nrBoxes += boundingBoxes.size();
+
                     ++currentScan;
                     x += stride.x();
                     y += stride.y();
@@ -53,23 +57,22 @@ public record Scanner() {
             }
         }
 
-        System.out.printf("Got %d bounding boxes to evaluate\n", objects.size());
+        boxWriter.close();
 
-        return new ScanResult(objects);
+        final var boxes = boxWriter.getList();
+
+        if(nrBoxes != boxes.size()) {
+            throw new IllegalStateException("Number of boxes written does not match expected number: " + nrBoxes + " vs " + boxes.size());
+        }
+
+        System.out.printf("Got %d bounding boxes to evaluate\n", boxes.size());
+
+        return new ScanResult(boxes);
     }
 
-    private Vertex getNumberOfScans(
-            final BoundingBox extent,
-            final Vertex kernelSize,
-            final Vertex stride
-    ) {
+    private static Vertex getNumberOfScans(final BoundingBox extent, final Vertex kernelSize, final Vertex stride) {
         final var adjustedSize = Vertex.componentWiseMultiply(Vertex.ceil(Vertex.componentWiseDiv(extent.size(), stride)), stride);
         final var adjustedExtent = new BoundingBox(extent.min(), Vertex.add(extent.min(), adjustedSize));
-
-        final var x = (adjustedExtent.size().x() - kernelSize.x()) / stride.x() + 1;
-        final var y = (adjustedExtent.size().y() - kernelSize.y()) / stride.y() + 1;
-        final var z = (adjustedExtent.size().z() - kernelSize.z()) / stride.z() + 1;
-
-        return new Vertex(x, y, z);
+        return Vertex.add(Vertex.componentWiseDiv(Vertex.sub(adjustedExtent.size(), kernelSize), stride), Vertex.ONE);
     }
 }

@@ -1,6 +1,6 @@
 package nicok.bac.yolo3d.dataset;
 
-import nicok.bac.yolo3d.common.BoundingBox;
+import nicok.bac.yolo3d.boundingbox.BoundingBox;
 
 import java.io.FileWriter;
 import java.io.IOException;

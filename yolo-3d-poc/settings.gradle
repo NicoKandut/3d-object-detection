@@ -6,6 +6,7 @@ include 'lib'
 // application and tools
 include 'app-create-big-file'
 include 'app-shuffle-bff'
+include 'app-sort-bff'
 include 'app-off-to-bff'
 include 'app-scan-big-file'
 include 'app-stats-dataset-psb'

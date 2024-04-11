@@ -75,15 +75,13 @@ public final class VoxRootChunk extends VoxChunk {
 
 		if (chunk instanceof VoxSizeChunk) {
 			this.size = ((VoxSizeChunk) chunk).getSize();
-		} else if (chunk instanceof VoxXYZIChunk) {
-			VoxXYZIChunk xyzi = (VoxXYZIChunk) chunk;
-			models.put(
+		} else if (chunk instanceof VoxXYZIChunk xyzi) {
+            models.put(
 				models.size(),
 				new VoxModelBlueprint(models.size(), size, xyzi.getVoxels())
 			);
-		} else if (chunk instanceof VoxRGBAChunk) {
-			VoxRGBAChunk rgba = (VoxRGBAChunk) chunk;
-			palette = rgba.getPalette();
+		} else if (chunk instanceof VoxRGBAChunk rgba) {
+            palette = rgba.getPalette();
 		} else {
 			processChunk(chunk);
 		}
@@ -96,18 +94,15 @@ public final class VoxRootChunk extends VoxChunk {
 		} else if (chunk instanceof VoxMATTChunk) {
 			VoxOldMaterial mat = ((VoxMATTChunk) chunk).getMaterial();
 			oldMaterials.put(mat.getID(), mat);
-		} else if (chunk instanceof VoxShapeChunk) {
-			VoxShapeChunk shapeChunk = (VoxShapeChunk)chunk;
-			this.shapeChunks.put(shapeChunk.id, shapeChunk);
-		} else if (chunk instanceof VoxTransformChunk) {
-			VoxTransformChunk transformChunk = (VoxTransformChunk)chunk;
-			if (this.transformChunks.size() == 0) {
+		} else if (chunk instanceof VoxShapeChunk shapeChunk) {
+            this.shapeChunks.put(shapeChunk.id, shapeChunk);
+		} else if (chunk instanceof VoxTransformChunk transformChunk) {
+            if (this.transformChunks.size() == 0) {
 				root_transform = transformChunk;
 			}
 			this.transformChunks.put(transformChunk.id, transformChunk);
-		} else if (chunk instanceof VoxGroupChunk) {
-			VoxGroupChunk groupChunk = (VoxGroupChunk)chunk;
-			this.groupChunks.put(groupChunk.id, groupChunk);
+		} else if (chunk instanceof VoxGroupChunk groupChunk) {
+            this.groupChunks.put(groupChunk.id, groupChunk);
 		}
 	}
 

@@ -1,14 +1,17 @@
 package nicok.bac.yolo3d.preprocessing;
 
-import nicok.bac.yolo3d.common.BoundingBox;
+import nicok.bac.yolo3d.boundingbox.BoundingBox;
 import nicok.bac.yolo3d.inputfile.InputFile;
-import nicok.bac.yolo3d.off.Vertex;
+import nicok.bac.yolo3d.mesh.Vertex;
 
 import java.util.Random;
 
 public final class RandomTransformation {
 
-    public static InputFile randomTransformation(InputFile inputFile, final BoundingBox targetBoundingBox) {
+    public static InputFile randomTransformation(
+            InputFile inputFile,
+            final BoundingBox targetBoundingBox
+    ) {
         final var random = new Random();
         final var randomRotation = getRandomRotation(inputFile.getBoundingBox(), random);
 
@@ -21,14 +24,14 @@ public final class RandomTransformation {
         final var randomShift = getRandomShift(targetBoundingBox, newBoundingBox, random);
 
         // apply rotation
-        inputFile = inputFile.withPreprocessing(randomRotation);
+        inputFile = inputFile.transform(randomRotation);
 
         // apply random scaling
         resize.withSourceBoundingBox(inputFile.getBoundingBox());
-        inputFile = inputFile.withPreprocessing(resize);
+        inputFile = inputFile.transform(resize);
 
         // apply random offset
-        inputFile = inputFile.withPreprocessing(randomShift);
+        inputFile = inputFile.transform(randomShift);
         return inputFile;
     }
 
@@ -46,7 +49,10 @@ public final class RandomTransformation {
                 .build();
     }
 
-    public static LinearTransformation getRandomRotation(BoundingBox boundingBox, Random random) {
+    public static LinearTransformation getRandomRotation(
+            final BoundingBox boundingBox,
+            final Random random
+    ) {
         final var beta = (random.nextDouble() - 0.5) * Math.PI / 8;
         final var gamma = (random.nextDouble() - 0.5) * Math.PI / 8;
         final var alpha = random.nextDouble() * 2 * Math.PI;
@@ -57,5 +63,6 @@ public final class RandomTransformation {
     }
 
     private RandomTransformation() {
+        throw new UnsupportedOperationException("Utility classes should not be instantiated");
     }
 }

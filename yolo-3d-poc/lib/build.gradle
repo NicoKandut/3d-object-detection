@@ -13,4 +13,11 @@ dependencies {
     api 'commons-cli:commons-cli:1.4'
     implementation 'org.tensorflow:tensorflow-core-api:0.5.0:linux-x86_64-gpu'
     implementation 'org.tensorflow:tensorflow-core-api:0.5.0:windows-x86_64-gpu'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+}
+
+test {
+    useJUnitPlatform()
 }

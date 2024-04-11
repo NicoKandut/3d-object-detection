@@ -1,14 +1,14 @@
 package nicok.bac.yolo3d;
 
-import nicok.bac.yolo3d.bff.BffWriter;
-import nicok.bac.yolo3d.off.OffReader;
+import nicok.bac.yolo3d.storage.bff.BffWriter;
+import nicok.bac.yolo3d.storage.off.OffReader;
 import nicok.bac.yolo3d.util.DirectoryUtil;
 import org.apache.commons.cli.Options;
 
 import java.io.File;
 import java.io.IOException;
 
-import static nicok.bac.yolo3d.util.CommandLineUtil.parseCommandLine;
+import static nicok.bac.yolo3d.terminal.CommandLineUtil.parseCommandLine;
 import static nicok.bac.yolo3d.util.DirectoryUtil.requireExtension;
 import static nicok.bac.yolo3d.util.StringUtil.requireNonBlank;
 
@@ -31,21 +31,24 @@ public class AppOffToBff {
         requireExtension(outputPath, ".bff");
 
         System.out.println("Converting .off file to .bff");
-        try (
-                final var offReader = new OffReader(inputPath);
-                final var bffWriter = new BffWriter(outputPath)
-        ) {
+        try (final var offReader = new OffReader(inputPath)) {
             final var offHeader = offReader.readHeader();
-            offReader.readVertices(bffWriter::writeVertex);
-            offReader.readFaces(bffWriter::writeFace);
-            bffWriter.writeHeader();
 
-            final var bffHeader = bffWriter.getHeader();
+            final var precisionBytes = 4;
+            final var indexBytes = offHeader.vertexCount() > Integer.MAX_VALUE ? 8 : 4;
 
-            System.out.println("[OFF]: " + inputPath);
-            System.out.println("  - " + offHeader);
-            System.out.println("[BFF]: " + outputPath);
-            System.out.println("  - " + bffHeader);
+            try(final var bffWriter = new BffWriter(outputPath, precisionBytes, indexBytes)) {
+                offReader.readVertices(bffWriter::writeVertex);
+                offReader.readFaces(bffWriter::writeFace);
+                bffWriter.writeHeader();
+
+                final var bffHeader = bffWriter.getHeader();
+
+                System.out.println("[OFF]: " + inputPath);
+                System.out.println("  - " + offHeader);
+                System.out.println("[BFF]: " + outputPath);
+                System.out.println("  - " + bffHeader);
+            }
         }
 
         System.out.println("Saved");
@@ -59,7 +62,8 @@ public class AppOffToBff {
         if (outputFile.isDirectory()) {
             final var filename = DirectoryUtil.getFilename(inputPath);
             outputFile = new File(outputPath + "/" + filename + ".bff");
-        } else if (!outputFile.exists()) {
+        }
+        if (!outputFile.exists()) {
             final var created = outputFile.createNewFile();
             if (!created) {
                 throw new IllegalStateException("Failed to create file: " + outputPath);

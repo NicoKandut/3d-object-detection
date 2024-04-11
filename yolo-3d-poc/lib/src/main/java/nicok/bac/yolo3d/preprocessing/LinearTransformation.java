@@ -1,7 +1,6 @@
 package nicok.bac.yolo3d.preprocessing;
 
-import nicok.bac.yolo3d.off.Vertex;
-import nicok.bac.yolo3d.off.Vertex;
+import nicok.bac.yolo3d.mesh.Vertex;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 

@@ -1,63 +1,104 @@
 package nicok.bac.yolo3d.voxelization;
 
-import nicok.bac.yolo3d.common.BoundingBox;
-import nicok.bac.yolo3d.off.Vertex;
+import nicok.bac.yolo3d.boundingbox.BoundingBox;
 import nicok.bac.yolo3d.common.Volume3D;
-import nicok.bac.yolo3d.off.VertexMesh;
+import nicok.bac.yolo3d.inputfile.TriangleEventIterator;
+import nicok.bac.yolo3d.mesh.TriangleVertex;
+import nicok.bac.yolo3d.mesh.Vertex;
+import nicok.bac.yolo3d.storage.FloatWrite3D;
+import nicok.bac.yolo3d.storage.RandomAccessMeshReader;
+import nicok.bac.yolo3d.storage.chunkstore.ChunkStore;
+import nicok.bac.yolo3d.terminal.ProgressBar;
 
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.Comparator;
-import java.util.List;
+import java.util.HashMap;
 
 public class Voxelizer {
 
     public record PointX(double x, double normal) {
     }
 
+    /**
+     * Voxelizes a mesh into a 3D volume.
+     * Use this version if your mesh (and the resulting volume) is small enough to fit into memory.
+     */
     public static Volume3D voxelize(
-            List<VertexMesh.TriangleEvent> triangleEvents,
+            final TriangleEventIterator triangleEvents,
+            final RandomAccessMeshReader reader,
             final double voxelSize,
-            BoundingBox target
+            final BoundingBox target
     ) {
         final var boundingBox = new BoundingBox(
                 Vertex.mul(target.min(), 1 / voxelSize),
                 Vertex.mul(target.max(), 1 / voxelSize)
         );
-
-        final var lines = new ArrayList<VertexMesh.Line>();
         final var volume = Volume3D.forBoundingBox(boundingBox);
+        voxelizeTo(volume, triangleEvents, reader, voxelSize, target);
+        return volume;
+    }
+
+    /**
+     * Voxelizes a mesh into a chunk store.
+     * Use this version if your mesh (or the resulting volume) is too large to fit into memory.
+     */
+    public static ChunkStore saveChunkStore(
+            final TriangleEventIterator triangleEvents,
+            final RandomAccessMeshReader reader,
+            final double voxelSize,
+            final BoundingBox target,
+            final String name
+    ) throws IOException {
+        final var chunkStore = ChunkStore.writer(name, target);
+        voxelizeTo(chunkStore, triangleEvents, reader, voxelSize, target);
+        return chunkStore;
+    }
+
+    private static void voxelizeTo(
+            final FloatWrite3D target,
+            final TriangleEventIterator triangleEvents,
+            final RandomAccessMeshReader reader,
+            final double voxelSize,
+            final BoundingBox boundingBox
+    ) {
+        final var progress = new ProgressBar(20, (long) (boundingBox.size().z() / voxelSize));
+        final var faces = new HashMap<Long, TriangleVertex>();
 
         // scan over mesh in z direction
         final var halfVoxel = voxelSize / 2.0;
         var volZ = 0;
-        for (var z = target.min().z() + halfVoxel; z < target.max().z(); z += voxelSize) {
+        for (var z = boundingBox.min().z() + halfVoxel; z < boundingBox.max().z(); z += voxelSize) {
             // process events
             final var currentZ = z;
-            final var newEvents = triangleEvents.stream()
-                    .takeWhile(event -> event.z() <= currentZ)
-                    .toList();
-            triangleEvents = triangleEvents.subList(newEvents.size(), triangleEvents.size());
+            final var newEvents = triangleEvents.takeWhile(event -> event.z() <= currentZ);
 
             newEvents.forEach(event -> {
-                switch (event.type()) {
-                    case BEGIN -> lines.add(event.line());
-                    case MID -> event.line().isUpperHalf = true;
-                    case END -> lines.remove(event.line());
+                if (faces.containsKey(event.face())) {
+                    faces.remove(event.face());
+                } else {
+                    final var indexFace = reader.getFace(event.face());
+                    final var vertexFace = new TriangleVertex(
+                            reader.getVertex(indexFace.vertexIndices().get(0)),
+                            reader.getVertex(indexFace.vertexIndices().get(1)),
+                            reader.getVertex(indexFace.vertexIndices().get(2))
+                    );
+                    faces.put(event.face(), vertexFace);
                 }
             });
 
             // determine outlines of mesh at current z level
-            final var linesAtZ = lines.stream()
-                    .map(line -> line.atZ(currentZ))
+            final var linesAtZ = faces.values()
+                    .stream()
+                    .map(face -> face.zIntersect(currentZ))
                     .toList();
 
             var volY = 0;
-            for (var y = target.min().y() + halfVoxel; y < target.max().y(); y += voxelSize) {
+            for (var y = boundingBox.min().y() + halfVoxel; y < boundingBox.max().y(); y += voxelSize) {
                 final var currentY = y;
                 final var pointsAtY = linesAtZ.stream()
                         .filter(line -> line.v1().y() <= currentY && line.v2().y() >= currentY ||
                                 line.v2().y() <= currentY && line.v1().y() >= currentY)
-                        .map(line -> line.atY(currentY))
+                        .map(line -> line.zIntersect(currentY))
                         .sorted(Comparator.comparing(PointX::x))
                         .toList();
 
@@ -68,7 +109,7 @@ public class Voxelizer {
                 var fillDepth = 0;
                 var volX = 0;
                 var pointIndex = 0;
-                for (var x = target.min().x() + halfVoxel; x < target.max().x(); x += voxelSize) {
+                for (var x = boundingBox.min().x() + halfVoxel; x < boundingBox.max().x(); x += voxelSize) {
                     var override = false;
                     while (pointIndex < pointsAtY.size() && pointsAtY.get(pointIndex).x() < x) {
                         override = true;
@@ -81,20 +122,25 @@ public class Voxelizer {
                             fillDepth -= 1;
                         }
 
+                        if (pointIndex == pointsAtY.size() - 1) {
+                            fillDepth = 0;
+                        }
+
                         pointIndex++;
                     }
 
-                    // filled for large bodies, pointsInPixel for more solid surfaces
                     if (fillDepth > 0 || override) {
-                        volume.set(volX, volY, volZ, 1f);
+                        target.set(volX, volY, volZ, 1f);
                     }
                     ++volX;
                 }
                 ++volY;
             }
             ++volZ;
+            progress.printProgress(volZ);
         }
 
-        return volume;
+        // TODO: line ends left over. not an issue visually but might be worth cleaning up
+        System.out.println("done");
     }
 }

@@ -39,3 +39,11 @@ build/
 
 ### gradle ###
 .gradle
+
+*.bff
+*.vox
+*.map
+
+sorting
+volume
+boxes

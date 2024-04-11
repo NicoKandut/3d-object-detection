@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import static java.util.Objects.requireNonNull;
+import static nicok.bac.yolo3d.util.StringUtil.requireNonBlank;
 
 public class PsbDataset {
 
@@ -23,6 +24,8 @@ public class PsbDataset {
     private String path;
 
     public PsbDataset withPath(final String path) throws IOException {
+        requireNonBlank(path);
+
         this.path = path;
         scanClaFile(this.path + CLA_TRAIN, trainModels, trainLabels);
         scanClaFile(this.path + CLA_TEST, testModels, testLabels);

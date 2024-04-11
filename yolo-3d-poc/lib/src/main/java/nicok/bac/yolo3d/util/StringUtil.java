@@ -19,5 +19,6 @@ public final class StringUtil {
     }
 
     private StringUtil() {
+        throw new UnsupportedOperationException("Utility class should not be instantiated");
     }
 }
