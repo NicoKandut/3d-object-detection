@@ -51,7 +51,7 @@ def create_grid_index(shape, index_type):
 
     return conv_index
 
-def yolo_head(feats, input_size=112, num_classes=48, num_channels=1):
+def yolo_head(feats, input_size=112, num_classes=3, num_channels=1):
     # Dynamic implementation of conv dims for fully convolutional model.
     conv_dims = (7,7,7)  # assuming channels last
     # In YOLO the height index is the inner most iteration.
@@ -64,7 +64,7 @@ def yolo_head(feats, input_size=112, num_classes=48, num_channels=1):
 
     return box_xyz, box_whd
 
-def yolo_class_loss(y_true, y_pred, num_classes=48):
+def yolo_class_loss(y_true, y_pred, num_classes=3):
     label_class    = y_true[..., :num_classes] # ?x7x7x7x(num_classes)
     label_response = y_true[..., -1]           # ?x7x7x7x1
 
@@ -78,7 +78,7 @@ def yolo_class_loss(y_true, y_pred, num_classes=48):
 
     return class_loss
 
-def yolo_box_loss(y_true, y_pred, input_size=112, num_classes=48):
+def yolo_box_loss(y_true, y_pred, input_size=112, num_classes=3):
     # position of box information in output
     start = num_classes
     end = num_classes + 6
@@ -108,7 +108,7 @@ def yolo_box_loss(y_true, y_pred, input_size=112, num_classes=48):
     return box_loss
 
 
-def yolo_confidence_loss(y_true, y_pred, input_size=112, num_classes=48):
+def yolo_confidence_loss(y_true, y_pred, input_size=112, num_classes=3):
     # position of box information in output
     start = num_classes
     end = num_classes + 6

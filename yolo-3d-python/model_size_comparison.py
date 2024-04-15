@@ -41,7 +41,7 @@ if __name__ == '__main__':
     # for (size, pooling_layers) in configurations:
     #     input_shape = (size, size, size, 1)
     #     inputs = Input(input_shape)
-    #     outputs = model_tiny_yolov1(inputs, pooling_layers=pooling_layers, num_classes=48)
+    #     outputs = model_tiny_yolov1(inputs, pooling_layers=pooling_layers, num_classes=3)
     #     model = Model(inputs=inputs, outputs=outputs)
     #     trainable_count = np.sum([K.count_params(w) for w in model.trainable_weights])
     #     non_trainable_count = np.sum([K.count_params(w) for w in model.non_trainable_weights])

@@ -1,10 +1,7 @@
 package nicok.bac.yolo3d.terminal;
 
 import nicok.bac.yolo3d.mesh.Vertex;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.*;
 import org.apache.commons.math3.util.Pair;
 
 import static java.lang.Double.parseDouble;
@@ -15,12 +12,23 @@ import static nicok.bac.yolo3d.util.StringUtil.requireNonBlank;
 public final class CommandLineUtil {
 
     public static CommandLine parseCommandLine(
+            final String appName,
             final String[] args,
             final Options options
     ) {
         final var parser = new DefaultParser();
         try {
-            return parser.parse(options, args);
+            final var command = parser.parse(options, args);
+
+            // print help
+            if (command.hasOption("h")) {
+                final var formatter = new HelpFormatter();
+                formatter.printHelp(appName, options);
+                System.exit(0);
+                return null;
+            }
+
+            return command;
         } catch (final ParseException exception) {
             System.err.printf("Error: %s", exception.getMessage());
             System.exit(1);

@@ -24,11 +24,15 @@ public record ResultBoundingBox(
             final int j,
             final int k
     ) {
+        requireNonNull(network);
+        requireNonNull(output);
+        requireNonNull(frame);
+
         final var bestCategory = getBestCategory(output.classConfidence());
         final var scaledOutput = from_cell_repr(
                 i, j, k,
                 output,
-                7,
+                network.cellCount(),
                 (int) network.size().x() // only works for cubes
         );
         final var relativeBox = xyzwhd_to_minmax(
@@ -63,14 +67,14 @@ public record ResultBoundingBox(
     private static CellOutput from_cell_repr(
             int i, int j, int k,
             CellOutput output,
-            int cell_count,
+            Vertex cell_count,
             int full_size
     ) {
         return new CellOutput(
                 output.classConfidence(),
-                (output.x() + i) * full_size / cell_count,
-                (output.y() + j) * full_size / cell_count,
-                (output.z() + k) * full_size / cell_count,
+                (output.x() + i) * full_size / (float) cell_count.x(),
+                (output.y() + j) * full_size / (float) cell_count.y(),
+                (output.z() + k) * full_size / (float) cell_count.z(),
                 output.w() * full_size,
                 output.h() * full_size,
                 output.d() * full_size,

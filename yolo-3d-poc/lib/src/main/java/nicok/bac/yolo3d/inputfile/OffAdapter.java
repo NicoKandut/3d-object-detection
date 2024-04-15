@@ -28,13 +28,13 @@ public class OffAdapter implements InputFile {
     @Override
     public Volume3D read(final BoundingBox target) {
         final var voxelSize = 1.0;
-        return Voxelizer.voxelize(triangleEvents, mesh, voxelSize, target);
+        return Voxelizer.voxelize(triangleEvents, mesh, voxelSize, target, false);
     }
 
     @Override
     public ChunkStore createChunkStore() throws IOException {
         final var voxelSize = 1.0;
-        return Voxelizer.saveChunkStore(triangleEvents, mesh, voxelSize, this.getBoundingBox(), this.name);
+        return Voxelizer.saveChunkStore(triangleEvents, mesh, voxelSize, this.getBoundingBox(), this.name, false);
     }
 
     @Override

@@ -11,13 +11,14 @@ import static nicok.bac.yolo3d.util.StringUtil.requireNonBlank;
 public class AppBffTraverse {
 
     public static final Options OPTIONS = new Options()
-            .addRequiredOption("i", "input", true, "Input file.");
+            .addRequiredOption("i", "input", true, "Input file.")
+            .addOption("h", "help", false, "Display this help message");
 
     /**
      * Usage: :app-traverse-bff-file:run --args='-i C:/src/bac/dataset-psb/db/0/m5/m5.off'
      */
     public static void main(final String[] args) throws Exception {
-        final var commandLine = parseCommandLine(args, OPTIONS);
+        final var commandLine = parseCommandLine("AppBffTraverse", args, OPTIONS);
         final var inputPath = commandLine.getOptionValue("input");
 
         requireNonBlank(inputPath);

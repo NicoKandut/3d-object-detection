@@ -14,3 +14,7 @@ off voxelization for empty/full chunks? skip them completely?
 caching at while scanning would be nice but in practice it does not work
 todo:
   collect bounding boxes in persistentlist to support very large files
+
+intro - high level
+repository structure
+speicherung auf disk

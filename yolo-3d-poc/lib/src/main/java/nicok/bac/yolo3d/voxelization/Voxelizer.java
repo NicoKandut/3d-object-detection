@@ -27,14 +27,15 @@ public class Voxelizer {
             final TriangleEventIterator triangleEvents,
             final RandomAccessMeshReader reader,
             final double voxelSize,
-            final BoundingBox target
+            final BoundingBox target,
+            final boolean print
     ) {
         final var boundingBox = new BoundingBox(
                 Vertex.mul(target.min(), 1 / voxelSize),
                 Vertex.mul(target.max(), 1 / voxelSize)
         );
         final var volume = Volume3D.forBoundingBox(boundingBox);
-        voxelizeTo(volume, triangleEvents, reader, voxelSize, target);
+        voxelizeTo(volume, triangleEvents, reader, voxelSize, target, print);
         return volume;
     }
 
@@ -47,10 +48,11 @@ public class Voxelizer {
             final RandomAccessMeshReader reader,
             final double voxelSize,
             final BoundingBox target,
-            final String name
+            final String name,
+            final boolean print
     ) throws IOException {
         final var chunkStore = ChunkStore.writer(name, target);
-        voxelizeTo(chunkStore, triangleEvents, reader, voxelSize, target);
+        voxelizeTo(chunkStore, triangleEvents, reader, voxelSize, target, print);
         return chunkStore;
     }
 
@@ -59,7 +61,8 @@ public class Voxelizer {
             final TriangleEventIterator triangleEvents,
             final RandomAccessMeshReader reader,
             final double voxelSize,
-            final BoundingBox boundingBox
+            final BoundingBox boundingBox,
+            final boolean print
     ) {
         final var progress = new ProgressBar(20, (long) (boundingBox.size().z() / voxelSize));
         final var faces = new HashMap<Long, TriangleVertex>();
@@ -137,10 +140,16 @@ public class Voxelizer {
                 ++volY;
             }
             ++volZ;
-            progress.printProgress(volZ);
+
+            if (print) {
+                progress.printProgress(volZ);
+            }
+        }
+
+        if (print) {
+            System.out.println("done");
         }
 
         // TODO: line ends left over. not an issue visually but might be worth cleaning up
-        System.out.println("done");
     }
 }

@@ -21,10 +21,10 @@ public record ProgressBar(long width, long total) {
         final var ratio = Math.min((double) progress / (double) total, 1);
         final var filled = Math.round(ratio * (double) width);
 
-        final var barFilled = "=".repeat((int) Math.min(filled, total));
+        final var barFilled = "=".repeat((int) Math.min(filled, width));
         final var barEmpty = " ".repeat((int) Math.max(width - filled, 0));
         final var percent = ratio * 100.0;
-        final var detailsString = details == null || details.isEmpty() ? "" : 2 + details;
+        final var detailsString = details == null || details.isEmpty() ? "" : "- " + details;
 
         System.out.printf("\r%d/%d [%s%s] %.2f%% %s", progress, total, barFilled, barEmpty, percent, detailsString);
 

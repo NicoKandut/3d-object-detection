@@ -56,7 +56,7 @@ def pool_layer(x):
     x = MaxPooling3D((2, 2, 2), strides=(2, 2, 2), padding='same')(x)
     return x
 
-def model_tiny_yolov1(inputs, num_classes=2, pooling_layers=2, output_size=7):
+def model_tiny_yolov1(inputs, num_classes=3, pooling_layers=2, output_size=7):
     x = inputs
 
     if pooling_layers >= 7:

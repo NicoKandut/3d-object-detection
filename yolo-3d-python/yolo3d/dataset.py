@@ -6,7 +6,7 @@ import os
 
 from .coordinates import minmax_to_xyzwhd, to_cell_repr
 
-def load_label(label_path, vox_model_size=112, cell_count=7, num_classes=48):
+def load_label(label_path, vox_model_size=112, cell_count=7, num_classes=3):
     label_matrix = np.zeros([cell_count, cell_count, cell_count, num_classes + 6 + 1])
     with open(label_path, "r") as label_file:
         for label in label_file.readlines():

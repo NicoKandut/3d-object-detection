@@ -11,6 +11,7 @@ import nicok.bac.yolo3d.util.RepositoryPaths;
 import org.apache.commons.cli.Options;
 
 import java.io.File;
+import java.util.List;
 import java.util.Random;
 import java.util.stream.IntStream;
 
@@ -22,15 +23,16 @@ import static nicok.bac.yolo3d.terminal.CommandLineUtil.*;
 public class AppCreateBigFile {
 
     public static final Options OPTIONS = new Options()
-            .addRequiredOption("o", "output", true, "Output path")
-            .addRequiredOption("n", "n", true, "Number of models to put into the big file")
-            .addRequiredOption("ms", "model-size", true, "Size of the models in format min,max")
-            .addRequiredOption("s", "size", true, "Size of the file in format x,y,z");
+            .addOption("o", "output", true, "Output path")
+            .addOption("n", "n", true, "Number of models to put into the big file")
+            .addOption("ms", "model-size", true, "Size of the models in format min,max")
+            .addOption("s", "size", true, "Size of the file in format x,y,z")
+            .addOption("h", "help", false, "Display this help message");
 
     public static void main(final String[] args) throws Exception {
 
         // parse CLI arguments
-        final var commandLine = parseCommandLine(args, OPTIONS);
+        final var commandLine = parseCommandLine("AppCreateBigFile", args, OPTIONS);
         final var outputPath = parseFilePath(commandLine, "output", ".bff", ".off");
         final var size = parsePoint(commandLine, "size");
         final var modelSize = parseDoubleRange(commandLine, "model-size");
@@ -41,6 +43,7 @@ public class AppCreateBigFile {
         // init dataset
         final var dataset = new PsbDataset()
                 .withPath(RepositoryPaths.DATASET_PSB)
+                .withSelectedCategories(List.of("biplane"))
                 .build();
 
         final var random = new Random();

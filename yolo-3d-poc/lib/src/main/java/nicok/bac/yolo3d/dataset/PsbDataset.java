@@ -16,11 +16,11 @@ public class PsbDataset {
     public static final String CLA_TRAIN = "/classification/train.cla";
     public static final String CLA_TEST = "/classification/test.cla";
 
-    private final List<Category> categories = new ArrayList<>();
-    private final List<Model> trainModels = new ArrayList<>();
-    private final List<Label> trainLabels = new ArrayList<>();
-    private final List<Model> testModels = new ArrayList<>();
-    private final List<Label> testLabels = new ArrayList<>();
+    private List<Category> categories = new ArrayList<>();
+    private List<Model> trainModels = new ArrayList<>();
+    private List<Label> trainLabels = new ArrayList<>();
+    private List<Model> testModels = new ArrayList<>();
+    private List<Label> testLabels = new ArrayList<>();
     private String path;
 
     public PsbDataset withPath(final String path) throws IOException {
@@ -46,20 +46,16 @@ public class PsbDataset {
                 if (line.matches(".+ .+ .+")) {
                     final var parts = line.split(" ");
                     final var name = parts[0];
-                    final var parent = parts[1];
 
-                    // only use top level categories
-                    if (parent.equals("0")) {
-                        // check if category exists
-                        final var category = categories.stream()
-                                .filter(c -> c.name().equals(name))
-                                .findFirst();
-                        if (category.isPresent()) {
-                            currentCategory = category.get();
-                        } else {
-                            currentCategory = new Category(categories.size(), name);
-                            categories.add(currentCategory);
-                        }
+                    // check if category exists
+                    final var category = categories.stream()
+                            .filter(c -> c.name().equals(name))
+                            .findFirst();
+                    if (category.isPresent()) {
+                        currentCategory = category.get();
+                    } else {
+                        currentCategory = new Category(categories.size(), name);
+                        categories.add(currentCategory);
                     }
                 }
 
@@ -73,6 +69,38 @@ public class PsbDataset {
                 }
             }
         }
+    }
+
+    public PsbDataset withSelectedCategories(final List<String> selectedCategories) {
+        final var newCategories = this.categories.stream()
+                .filter(c -> selectedCategories.contains(c.name()))
+                .toList();
+        final var newTrainLabels = trainLabels.stream()
+                .filter(label -> selectedCategories.contains(categories.get(label.categoryId()).name()))
+                .map(label -> new Label(label.modelId(), selectedCategories.indexOf(categories.get(label.categoryId()).name())))
+                .toList();
+        final var newTestLabels = testLabels.stream()
+                .filter(label -> selectedCategories.contains(categories.get(label.categoryId()).name()))
+                .map(label -> new Label(label.modelId(), selectedCategories.indexOf(categories.get(label.categoryId()).name())))
+                .toList();
+
+        final var newTrainIds = newTrainLabels.stream().map(Label::modelId).toList();
+        final var newTestIds = newTestLabels.stream().map(Label::modelId).toList();
+
+        final var newTrainModels = trainModels.stream()
+                .filter(m -> newTrainIds.contains(m.id()))
+                .toList();
+        final var newTestModels = testModels.stream()
+                .filter(m -> newTestIds.contains(m.id()))
+                .toList();
+
+        this.categories = newCategories;
+        this.trainLabels = newTrainLabels;
+        this.trainModels = newTrainModels;
+        this.testLabels = newTestLabels;
+        this.testModels = newTestModels;
+
+        return this;
     }
 
     public Dataset build() {

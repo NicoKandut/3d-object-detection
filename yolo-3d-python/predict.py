@@ -181,7 +181,7 @@ if __name__ == '__main__':
     # setup model
     input_shape = (1, 112, 112, 112, 1)
     inputs = Input(input_shape[1:5])
-    outputs = model_tiny_yolov1(inputs, num_classes=48, pooling_layers=4)
+    outputs = model_tiny_yolov1(inputs, num_classes=3, pooling_layers=4)
     model = Model(inputs=inputs, outputs=outputs)
     model.load_weights('final-weights.hdf5', by_name=True)
 

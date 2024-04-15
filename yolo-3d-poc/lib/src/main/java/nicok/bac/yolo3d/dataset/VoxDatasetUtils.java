@@ -28,7 +28,7 @@ public final class VoxDatasetUtils {
 
     public static void saveSetFile(
             final String filename,
-            final List<Integer> ids
+            final List<String> ids
     ) throws IOException {
         requireExtension(filename, ".txt");
 

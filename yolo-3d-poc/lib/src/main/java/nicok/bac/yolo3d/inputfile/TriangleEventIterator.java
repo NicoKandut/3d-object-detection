@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.LongStream;
 
+import static java.util.Collections.emptyList;
 import static java.util.Comparator.comparing;
 import static java.util.Objects.requireNonNull;
 
@@ -41,13 +42,17 @@ public class TriangleEventIterator implements Iterator<TriangleEvent> {
     }
 
     public List<TriangleEvent> takeWhile(final Predicate<TriangleEvent> predicate) {
+        if (!hasNext()) {
+            return emptyList();
+        }
+
         final var eventsToTake = new ArrayList<TriangleEvent>();
 
         // read events until the predicate is false
         var current = this.next();
         while (current != null && predicate.test(current)) {
             eventsToTake.add(current);
-            current = this.next();
+            current = hasNext() ? next() : null;
         }
 
         // afterward store the next event to not lose it

@@ -9,14 +9,9 @@ import nicok.bac.yolo3d.network.Network;
 import nicok.bac.yolo3d.terminal.ProgressBar;
 import nicok.bac.yolo3d.util.RepositoryPaths;
 
-import java.io.IOException;
-
 public record Scanner() {
 
-    public ScanResult scan(
-            final InputFile inputFile,
-            final Network network
-    ) throws Exception {
+    public ScanResult scan(final InputFile inputFile, final Network network) throws Exception {
         final var extent = inputFile.getBoundingBox();
         System.out.printf("File size %s\n", extent.size());
 
@@ -29,7 +24,6 @@ public record Scanner() {
 
         System.out.println("Scanning file");
         final var progressBar = new ProgressBar(20, nrScans);
-        final var boxesPerScan = 7 * 7 * 7;
         final var boxWriter = PersistentResultBoundingBoxList.writer(RepositoryPaths.BOX_DATA_TEMP + "/scan.boxes");
         var nrBoxes = 0;
 
@@ -51,23 +45,30 @@ public record Scanner() {
 
                     ++currentScan;
                     x += stride.x();
-                    y += stride.y();
-                    z += stride.z();
                 }
+                y += stride.y();
             }
+            z += stride.z();
         }
 
         boxWriter.close();
 
         final var boxes = boxWriter.getList();
-
-        if(nrBoxes != boxes.size()) {
-            throw new IllegalStateException("Number of boxes written does not match expected number: " + nrBoxes + " vs " + boxes.size());
-        }
+        verifyNrBoxes(nrBoxes, boxes);
 
         System.out.printf("Got %d bounding boxes to evaluate\n", boxes.size());
 
         return new ScanResult(boxes);
+    }
+
+    private static void verifyNrBoxes(int nrBoxes, PersistentResultBoundingBoxList boxes) {
+        if (nrBoxes != boxes.size()) {
+            throw new IllegalStateException(String.format(
+                    "Number of boxes written does not match expected number: %d vs %d",
+                    nrBoxes,
+                    boxes.size()
+            ));
+        }
     }
 
     private static Vertex getNumberOfScans(final BoundingBox extent, final Vertex kernelSize, final Vertex stride) {

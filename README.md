@@ -9,21 +9,21 @@ In this case, these files might even be larger than the RAM available to the pro
 
 ## Repository structure
 
-- [/yolo-3d-poc](/yolo-3d-poc/)
+- [yolo-3d-poc](./yolo-3d-poc)
 
   The main project.
   Java code to facilitate scanning of very large files. 
-- [/yolo-3d-python](/yolo-3d-python)
+- [yolo-3d-python](./yolo-3d-python)
 
   Contains python code used to train the model.
   This is much easier in python.
-- [/saved-models](/saved-models)
+- [saved-models](./saved-models)
 
   Pretrained models and weights.
-- [/documents](/documents)
+- [documents](./documents)
 
   Statistics, Reports and other documents created during development.
 
-- [/datased-psb](/datased-psb)
+- [dataset-psb](./dataset-psb)
 
   OFF models and classification information of the Princeton Shape Benchmark.

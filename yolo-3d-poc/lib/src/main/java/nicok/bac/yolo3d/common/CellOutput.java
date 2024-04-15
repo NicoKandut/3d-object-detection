@@ -1,6 +1,7 @@
 package nicok.bac.yolo3d.common;
 
 import static java.util.Arrays.copyOfRange;
+import static java.util.Objects.requireNonNull;
 
 public record CellOutput(
         float[] classConfidence,
@@ -12,16 +13,25 @@ public record CellOutput(
         float d,
         float confidence
 ) {
+    public CellOutput {
+        requireNonNull(classConfidence);
+    }
+
     public static CellOutput fromOutputArray(float[] output) {
+        requireNonNull(output);
+
+        final var size = output.length;
+        final var nrClasses = size - 7;
+
         return new CellOutput(
-                copyOfRange(output, 0, 2),
-                output[2],
-                output[3],
-                output[4],
-                output[5],
-                output[6],
-                output[7],
-                output[8]
+                copyOfRange(output, 0, nrClasses),
+                output[nrClasses],
+                output[nrClasses + 1],
+                output[nrClasses + 2],
+                output[nrClasses + 3],
+                output[nrClasses + 4],
+                output[nrClasses + 5],
+                output[nrClasses + 6]
         );
     }
 }

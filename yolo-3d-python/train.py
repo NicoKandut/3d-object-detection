@@ -16,7 +16,7 @@ if __name__ == '__main__':
     epochs = int(args.epochs)
 
     inputs = Input(input_shape())
-    outputs = model_tiny_yolov1(inputs, num_classes=48, pooling_layers=4)
+    outputs = model_tiny_yolov1(inputs, num_classes=3, pooling_layers=4)
 
     model = Model(inputs=inputs, outputs=outputs)
     model.compile(loss=yolo_loss, optimizer='adam')

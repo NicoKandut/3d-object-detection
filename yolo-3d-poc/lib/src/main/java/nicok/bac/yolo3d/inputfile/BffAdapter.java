@@ -16,7 +16,6 @@ import nicok.bac.yolo3d.voxelization.Voxelizer;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.util.Comparator;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
@@ -72,13 +71,13 @@ public class BffAdapter implements InputFile, AutoCloseable {
     @Override
     public Volume3D read(final BoundingBox target) {
         final var voxelSize = 1.0;
-        return Voxelizer.voxelize(getTriangleEvents(), transformed, voxelSize, target);
+        return Voxelizer.voxelize(getTriangleEvents(), transformed, voxelSize, target, false);
     }
 
     @Override
     public ChunkStore createChunkStore() throws IOException {
         final var voxelSize = 1.0;
-        return Voxelizer.saveChunkStore(getTriangleEvents(), transformed, voxelSize, this.getBoundingBox(), this.name);
+        return Voxelizer.saveChunkStore(getTriangleEvents(), transformed, voxelSize, this.getBoundingBox(), this.name, false);
     }
 
     @Override

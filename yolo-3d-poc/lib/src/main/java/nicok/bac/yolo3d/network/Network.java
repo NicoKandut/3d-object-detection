@@ -11,5 +11,7 @@ public interface Network {
 
     Vertex size();
 
+    Vertex cellCount();
+
     List<ResultBoundingBox> compute(final BoundingBox box, final Volume3D volume);
 }

@@ -6,8 +6,6 @@ import nicok.bac.yolo3d.preprocessing.FitToBox;
 import nicok.bac.yolo3d.storage.chunkstore.ChunkStore;
 import org.apache.commons.cli.Options;
 
-import java.io.IOException;
-
 import static java.util.Objects.requireNonNull;
 import static nicok.bac.yolo3d.terminal.CommandLineUtil.*;
 import static nicok.bac.yolo3d.util.DirectoryUtil.getFilename;
@@ -19,10 +17,11 @@ public class AppVoxelize {
             .addRequiredOption("o", "output", true, "Output file.")
             .addOption("s", "size", true, "Size of the output file in voxels, format: x,y,z")
             .addOption("vs", "voxel-size", true, "Size of the output file in voxels, format: x,y,z")
-            .addOption("f", "fit", true, "Fit to bounding box. Default: false.");
+            .addOption("f", "fit", true, "Fit to bounding box. Default: false.")
+            .addOption("h", "help", false, "Display this help message");
 
     public static void main(String[] args) throws Exception {
-        final var commandLine = parseCommandLine(args, OPTIONS);
+        final var commandLine = parseCommandLine("AppVoxelize", args, OPTIONS);
         final var inputPath = commandLine.getOptionValue("input");
         final var outputPath = commandLine.getOptionValue("output");
         final var size = parsePoint(commandLine, "size");
@@ -49,7 +48,7 @@ public class AppVoxelize {
         final var chunkStore = inputFile.createChunkStore();
         chunkStore.writeHeaderFile();
 
-//        writeChunkStoreToVox(inputPath, outputPath, chunkStore);
+        writeChunkStoreToVox(inputPath, outputPath, chunkStore);
     }
 
     private static void writeChunkStoreToVox(String inputPath, String outputPath, ChunkStore chunkStore) {

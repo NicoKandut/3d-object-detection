@@ -13,8 +13,8 @@ public final class BffWriterRAF implements AutoCloseable {
 
     private final RandomAccessFile file;
     private final BoundingBox.Builder boundingBox = new BoundingBox.Builder();
-    private long precisionBytes = 0;
-    private long indexBytes = 0;
+    private final long precisionBytes;
+    private final long indexBytes;
     private long vertexCount = 0;
     private long faceCount = 0;
 
@@ -50,6 +50,13 @@ public final class BffWriterRAF implements AutoCloseable {
         file.writeLong(header.vertexCount());
         file.writeLong(header.faceCount());
         file.writeLong(header.edgeCount());
+        final var boundingBox = this.boundingBox.build();
+        file.writeDouble(boundingBox.min().x());
+        file.writeDouble(boundingBox.min().y());
+        file.writeDouble(boundingBox.min().z());
+        file.writeDouble(boundingBox.max().x());
+        file.writeDouble(boundingBox.max().y());
+        file.writeDouble(boundingBox.max().z());
     }
 
     public void writeVertex(final Vertex vertex) throws IOException {

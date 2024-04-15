@@ -16,10 +16,11 @@ public class AppOffToBff {
 
     public static final Options OPTIONS = new Options()
             .addRequiredOption("i", "input", true, "Input file.")
-            .addRequiredOption("o", "output", true, "Output file.");
+            .addRequiredOption("o", "output", true, "Output file.")
+            .addOption("h", "help", false, "Display this help message");
 
     public static void main(final String[] args) throws Exception {
-        final var commandLine = parseCommandLine(args, OPTIONS);
+        final var commandLine = parseCommandLine("AppOffToBff", args, OPTIONS);
         final var inputPath = commandLine.getOptionValue("input");
         final var outputTarget = commandLine.getOptionValue("output");
 

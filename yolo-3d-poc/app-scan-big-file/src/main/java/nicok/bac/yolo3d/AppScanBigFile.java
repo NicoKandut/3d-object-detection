@@ -12,12 +12,13 @@ import static nicok.bac.yolo3d.terminal.CommandLineUtil.parseCommandLine;
 public class AppScanBigFile {
 
     public static final Options OPTIONS = new Options()
-            .addRequiredOption("i", "input", true, "Input file.");
+            .addRequiredOption("i", "input", true, "Input file.")
+            .addOption("h", "help", false, "Display this help message");
 
     public static void main(final String[] args) throws Exception {
 
         // parse CLI arguments
-        final var commandLine = parseCommandLine(args, OPTIONS);
+        final var commandLine = parseCommandLine("AppScanBigFile", args, OPTIONS);
         final var inputPath = commandLine.getOptionValue("input");
 
         // init input file
@@ -31,7 +32,7 @@ public class AppScanBigFile {
         final var result = scanner.scan(inputFile, network);
 
         // refine results
-        final var filter = new BoxFilter(0.1, 0.5);
+        final var filter = new BoxFilter(0.5, 0.5);
         final var boxes = filter.filter(result.boxes());
         System.out.printf("%d boxes survived\n", boxes.size());
 
