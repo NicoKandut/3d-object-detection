@@ -18,9 +18,9 @@ public final class VoxRootChunk extends VoxChunk {
 	private int[] palette = VoxRGBAChunk.DEFAULT_PALETTE;
 	private final HashMap<Integer, VoxMaterial> materials = new HashMap<>();
 	private final HashMap<Integer, VoxOldMaterial> oldMaterials = new HashMap<>();
-	private final HashMap<Integer, VoxShapeChunk> shapeChunks = new HashMap<Integer, VoxShapeChunk>();
-	private final HashMap<Integer, VoxTransformChunk> transformChunks = new HashMap<Integer, VoxTransformChunk>();
-	private final HashMap<Integer, VoxGroupChunk> groupChunks = new HashMap<Integer, VoxGroupChunk>();
+	private final HashMap<Integer, VoxShapeChunk> shapeChunks = new HashMap<>();
+	private final HashMap<Integer, VoxTransformChunk> transformChunks = new HashMap<>();
+	private final HashMap<Integer, VoxGroupChunk> groupChunks = new HashMap<>();
 	private VoxTransformChunk root_transform;
 
 	/**
