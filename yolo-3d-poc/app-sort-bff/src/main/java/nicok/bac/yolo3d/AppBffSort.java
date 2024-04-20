@@ -52,6 +52,7 @@ public class AppBffSort {
             final var vertexCount = header.vertexCount();
             final var faceCount = header.faceCount();
 
+            // batch size could be a lot bigger
 //            final var memoryDefinedBatchSize = (Runtime.getRuntime().freeMemory() / 2) / 8;
             final var memoryDefinedBatchSize = 20000;
             final var vertexBatchSize = (int) Math.min(Math.min(memoryDefinedBatchSize, vertexCount), Integer.MAX_VALUE);

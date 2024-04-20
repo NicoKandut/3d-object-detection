@@ -3,6 +3,8 @@ package nicok.bac.yolo3d.collection;
 import nicok.bac.yolo3d.boundingbox.BoundingBox;
 import nicok.bac.yolo3d.common.ResultBoundingBox;
 import nicok.bac.yolo3d.mesh.Vertex;
+import nicok.bac.yolo3d.storage.BinaryReader;
+import nicok.bac.yolo3d.storage.BinaryWriter;
 import nicok.bac.yolo3d.util.DirectoryUtil;
 import nicok.bac.yolo3d.util.RepositoryPaths;
 import nicok.bac.yolo3d.util.SortedMultiIterator;
@@ -57,7 +59,7 @@ public class PersistentResultBoundingBoxList extends PersistentList<ResultBoundi
 
         public void write(final ResultBoundingBox value) {
             try {
-                writeTo(stream, value);
+                BinaryWriter.write(stream, value);
                 ++size;
             } catch (final IOException e) {
                 throw new RuntimeException(e);
@@ -82,7 +84,7 @@ public class PersistentResultBoundingBoxList extends PersistentList<ResultBoundi
     protected ResultBoundingBox getItem(long index) {
         try {
             this.file.seek(this.itemSize * index);
-            return readFrom(this.file);
+            return BinaryReader.readResultBoundingBox(this.file);
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -92,35 +94,7 @@ public class PersistentResultBoundingBoxList extends PersistentList<ResultBoundi
     protected void setItem(long index, ResultBoundingBox value) {
         try {
             this.file.seek(this.itemSize * index);
-            writeTo(this.file, value);
-        } catch (final IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
-    private static void writeTo(DataOutput output, ResultBoundingBox value) throws IOException {
-        output.writeInt(value.category());
-        output.writeDouble(value.confidence());
-        output.writeDouble(value.boundingBox().min().x());
-        output.writeDouble(value.boundingBox().min().y());
-        output.writeDouble(value.boundingBox().min().z());
-        output.writeDouble(value.boundingBox().max().x());
-        output.writeDouble(value.boundingBox().max().y());
-        output.writeDouble(value.boundingBox().max().z());
-    }
-
-    private static ResultBoundingBox readFrom(DataInput input) {
-        try {
-            final var category = input.readInt();
-            final var confidence = input.readDouble();
-            final var minX = input.readDouble();
-            final var minY = input.readDouble();
-            final var minZ = input.readDouble();
-            final var maxX = input.readDouble();
-            final var maxY = input.readDouble();
-            final var maxZ = input.readDouble();
-            final var boundingBox = new BoundingBox(new Vertex(minX, minY, minZ), new Vertex(maxX, maxY, maxZ));
-            return new ResultBoundingBox(category, confidence, boundingBox);
+            BinaryWriter.write(this.file, value);
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -130,7 +104,13 @@ public class PersistentResultBoundingBoxList extends PersistentList<ResultBoundi
     public Stream<ResultBoundingBox> stream() {
         try {
             final var stream = new DataInputStream(new BufferedInputStream(new FileInputStream(this.path)));
-            return Stream.generate(() -> readFrom(stream)).limit(size);
+            return Stream.generate(() -> {
+                try {
+                    return BinaryReader.readResultBoundingBox(stream);
+                } catch (final IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            }).limit(size);
         } catch (final FileNotFoundException e) {
             throw new UncheckedIOException(e);
         }

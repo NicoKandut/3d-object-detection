@@ -13,6 +13,11 @@ import java.util.StringTokenizer;
 
 import static java.util.Objects.requireNonNull;
 
+/**
+ * A reader for the OFF file format.
+ * This reader is designed to read the entire file into memory.
+ * To handle large files, consider using the BFF file format.
+ */
 public final class OffReader implements AutoCloseable {
 
     public static final String DELIMITER = " \n\t";

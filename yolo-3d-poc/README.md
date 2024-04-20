@@ -12,6 +12,9 @@ This poses two large challenges
 This repository contains multiple applications and one library.
 All apps utilize the library to a certain extent.
 
+To get a better understanding of the project, I suggest you check out [app-scan-big-file](./app-scan-big-file) first. 
+It encapsulates the core idea of the project. 
+
 ### Applications
 
 Here is a list of all applications in this repository.

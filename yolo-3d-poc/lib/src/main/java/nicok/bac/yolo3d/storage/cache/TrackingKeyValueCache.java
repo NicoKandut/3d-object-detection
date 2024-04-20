@@ -7,7 +7,6 @@ import java.util.function.Function;
 /**
  * Key value cache with a fixed capacity.
  * This implementation keeps track of cache hits and cache misses.
- * @see KeyValueCache for a more efficent implementation without tracking.
  */
 public class TrackingKeyValueCache<K, V> extends LinkedHashMap<K, V> implements CacheStatistics {
 

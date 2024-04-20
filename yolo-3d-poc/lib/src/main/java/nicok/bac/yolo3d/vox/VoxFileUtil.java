@@ -58,30 +58,11 @@ public final class VoxFileUtil {
         }
     }
 
-    public static List<Voxel> toVoxels(final ChunkStore chunkStore) {
-//        final var size = chunkStore.boundingBox().size();
-        final var voxels = new ArrayList<Voxel>();
-
-        try {
-            chunkStore.queryAll()
-                    .filter(pair -> pair.getValue() != 0f)
-                    .map(Pair::getKey)
-                    .map(vertex -> new Voxel((int) vertex.x(), (int) vertex.y(), (int) vertex.z(), (byte) 80))
-                    .forEach(voxels::add);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-//        for (var i = 0; i < size.x(); ++i) {
-//            for (var j = 0; j < size.y(); ++j) {
-//                for (var k = 0; k < size.z(); ++k) {
-//                    final var value = chunkStore.query(new Vertex(i, j, k));
-//                    if (value != 0f) {
-//                        voxels.add(new Voxel(i, j, k, (byte) 80));
-//                    }
-//                }
-//            }
-//        }
-        return voxels;
+    public static List<Voxel> toVoxels(final ChunkStore chunkStore) throws IOException {
+        return chunkStore.queryAll()
+                .filter(pair -> pair.getValue() != 0f)
+                .map(Pair::getKey)
+                .map(vertex -> new Voxel((int) vertex.x(), (int) vertex.y(), (int) vertex.z(), (byte) 80))
+                .toList();
     }
 }

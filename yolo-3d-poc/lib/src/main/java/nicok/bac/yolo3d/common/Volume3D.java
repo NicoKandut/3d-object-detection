@@ -18,6 +18,10 @@ import java.util.List;
 import static java.util.Objects.requireNonNull;
 import static nicok.bac.yolo3d.boundingbox.BoundingBox.fromOrigin;
 
+/**
+ * Represents a 3D volume of float values.
+ * Many other functionalities require thia interface.
+ */
 public class Volume3D implements HasBoundingBox, FloatWrite3D, FloatRead3D {
 
     private final float[] data;
@@ -55,6 +59,10 @@ public class Volume3D implements HasBoundingBox, FloatWrite3D, FloatRead3D {
         return this.data[index];
     }
 
+    /**
+     * Returns the width of the volume.
+     * Useful for integration with tensorflow.
+     */
     public Tensor toTensor() {
         final var shape = Shape.of(1, width, height, depth, 1);
         final var buffer = DataBuffers.of(this.data);
@@ -62,6 +70,10 @@ public class Volume3D implements HasBoundingBox, FloatWrite3D, FloatRead3D {
         return TFloat32.tensorOf(ndArray);
     }
 
+    /**
+     * Returns the volume as a list of voxels.
+     * Useful for visualization as .vox files.
+     */
     public List<Voxel> toVoxels() {
         final var voxels = new ArrayList<Voxel>();
 

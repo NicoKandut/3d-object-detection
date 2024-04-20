@@ -2,6 +2,9 @@ package nicok.bac.yolo3d.boundingbox;
 
 import nicok.bac.yolo3d.mesh.Vertex;
 
+import java.io.DataOutput;
+import java.io.IOException;
+
 import static java.util.Objects.requireNonNull;
 
 /**

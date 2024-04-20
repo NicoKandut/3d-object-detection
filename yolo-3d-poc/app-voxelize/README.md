@@ -7,6 +7,15 @@ These can be easily inspected with MagicaVoxel.
 
 Of course the end goal is not to view files in MagicaVoxel but to feed them into a CNN.
 
+## Arguments
+
+- `-i` or `--input` (required): The input file.
+- `-o` or `--output` (required): The output directory.
+- `-s` or `--size` (required): The size of the voxel grid. Format: 112,112,112
+- `-f` or `--fit` (optional): Fit the model to the bounding box by scaling it up but preserving aspect ratios. Default is false.
+- `-h` or `--help`: Show the help message.
+
+
 ## Usage
 
 Example Usage

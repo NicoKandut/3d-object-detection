@@ -1,6 +1,7 @@
 package nicok.bac.yolo3d;
 
 import nicok.bac.yolo3d.boundingbox.BoundingBox;
+import nicok.bac.yolo3d.inputfile.InputFile;
 import nicok.bac.yolo3d.inputfile.InputFileProvider;
 import nicok.bac.yolo3d.preprocessing.FitToBox;
 import nicok.bac.yolo3d.storage.chunkstore.ChunkStore;
@@ -9,14 +10,14 @@ import org.apache.commons.cli.Options;
 import static java.util.Objects.requireNonNull;
 import static nicok.bac.yolo3d.terminal.CommandLineUtil.*;
 import static nicok.bac.yolo3d.util.DirectoryUtil.getFilename;
+import static nicok.bac.yolo3d.util.StringUtil.requireNonBlank;
 import static nicok.bac.yolo3d.vox.VoxFileUtil.saveVoxFile;
 
 public class AppVoxelize {
     public static final Options OPTIONS = new Options()
-            .addRequiredOption("i", "input", true, "Input file.")
-            .addRequiredOption("o", "output", true, "Output file.")
+            .addOption("i", "input", true, "Input file.")
+            .addOption("o", "output", true, "Output file.")
             .addOption("s", "size", true, "Size of the output file in voxels, format: x,y,z")
-            .addOption("vs", "voxel-size", true, "Size of the output file in voxels, format: x,y,z")
             .addOption("f", "fit", true, "Fit to bounding box. Default: false.")
             .addOption("h", "help", false, "Display this help message");
 
@@ -27,8 +28,8 @@ public class AppVoxelize {
         final var size = parsePoint(commandLine, "size");
         final var fit = parseBoolean(commandLine, "fit", false);
 
-        requireNonNull(inputPath);
-        requireNonNull(outputPath);
+        requireNonBlank(inputPath);
+        requireNonBlank(outputPath);
 
         final var targetBoundingBox = BoundingBox.fromOrigin(size);
 
@@ -36,12 +37,7 @@ public class AppVoxelize {
         System.out.printf("File bounds: %s\n", inputFile.getBoundingBox());
 
         if (fit) {
-            System.out.println("Fitting to bounding box");
-            final var transform = new FitToBox()
-                    .withSourceBoundingBox(inputFile.getBoundingBox())
-                    .withTargetBoundingBox(targetBoundingBox);
-            inputFile = inputFile.transform(transform);
-            System.out.printf("File bounds: %s\n", inputFile.getBoundingBox());
+            inputFile = fitToBox(inputFile, targetBoundingBox);
         }
 
         System.out.println("Reading volume data");
@@ -49,6 +45,16 @@ public class AppVoxelize {
         chunkStore.writeHeaderFile();
 
         writeChunkStoreToVox(inputPath, outputPath, chunkStore);
+    }
+
+    private static InputFile fitToBox(InputFile inputFile, BoundingBox targetBoundingBox) {
+        System.out.println("Fitting to bounding box");
+        final var transform = new FitToBox()
+                .withSourceBoundingBox(inputFile.getBoundingBox())
+                .withTargetBoundingBox(targetBoundingBox);
+        inputFile = inputFile.transform(transform);
+        System.out.printf("File bounds: %s\n", inputFile.getBoundingBox());
+        return inputFile;
     }
 
     private static void writeChunkStoreToVox(String inputPath, String outputPath, ChunkStore chunkStore) {

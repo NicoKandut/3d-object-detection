@@ -1,9 +1,13 @@
 package nicok.bac.yolo3d.collection;
 
 import nicok.bac.yolo3d.mesh.TriangleEvent;
+import nicok.bac.yolo3d.storage.BinaryReader;
+import nicok.bac.yolo3d.storage.BinaryWriter;
 
 import java.io.*;
 import java.util.stream.Stream;
+
+import static nicok.bac.yolo3d.util.ExceptionUtil.unchecked;
 
 public class PersistentTriangleEventList extends PersistentList<TriangleEvent> {
     protected PersistentTriangleEventList(String path, long size) throws IOException {
@@ -17,25 +21,21 @@ public class PersistentTriangleEventList extends PersistentList<TriangleEvent> {
         try (final var stream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)))) {
             final var size = values.peek(value -> {
                         try {
-                            stream.writeDouble(value.z());
-                            stream.writeLong(value.face());
+                            BinaryWriter.write(stream, value);
                         } catch (final IOException e) {
                             throw new RuntimeException(e);
                         }
                     })
                     .count();
-
             return new PersistentTriangleEventList(path, size);
         }
-
-
     }
 
     @Override
     protected TriangleEvent getItem(long index) {
         try {
-            this.file.seek(this.itemSize * index);
-            return null;
+            file.seek(itemSize * index);
+            return BinaryReader.readTriangleEvent(file);
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -44,9 +44,8 @@ public class PersistentTriangleEventList extends PersistentList<TriangleEvent> {
     @Override
     protected void setItem(long index, TriangleEvent value) {
         try {
-            this.file.seek(this.itemSize * index);
-            this.file.writeDouble(value.z());
-            this.file.writeLong(value.face());
+            file.seek(itemSize * index);
+            BinaryWriter.write(file, value);
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -56,16 +55,7 @@ public class PersistentTriangleEventList extends PersistentList<TriangleEvent> {
     public Stream<TriangleEvent> stream() {
         try {
             final DataInputStream stream = new DataInputStream(new BufferedInputStream(new FileInputStream(this.path)));
-            return Stream.generate(() -> {
-                        try {
-                            final double z = stream.readDouble();
-                            final var face = stream.readLong();
-                            return new TriangleEvent(z, face);
-                        } catch (final IOException e) {
-                            throw new UncheckedIOException(e);
-                        }
-                    })
-                    .limit(this.size);
+            return Stream.generate(unchecked(() -> BinaryReader.readTriangleEvent(stream))).limit(this.size);
         } catch (FileNotFoundException e) {
             throw new UncheckedIOException(e);
         }

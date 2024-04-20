@@ -15,7 +15,9 @@ public record ResultBoundingBox(
         requireNonNull(boundingBox);
     }
 
-    // TODO: move this out of here
+    /**
+     * Creates a new {@link ResultBoundingBox} from the given output.
+     */
     public static ResultBoundingBox fromOutput(
             final Network network,
             final CellOutput output,
@@ -48,7 +50,9 @@ public record ResultBoundingBox(
         );
     }
 
-
+    /**
+     * Returns the index of the category with the highest confidence.
+     */
     private static int getBestCategory(final float[] class_confidence) {
         var max_value = -1.0f;
         var max_index = -1;

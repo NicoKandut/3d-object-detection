@@ -14,7 +14,7 @@ public final class ExceptionUtil {
         };
     }
 
-    public static <T> Supplier<T> unchecked(Supplier<T> function) {
+    public static <T> Supplier<T> unchecked(ThrowingSupplier<T, Exception> function) {
         return () -> {
             try {
                 return function.get();

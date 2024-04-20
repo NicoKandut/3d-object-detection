@@ -1,6 +1,6 @@
 package nicok.bac.yolo3d.collection;
 
-import nicok.bac.yolo3d.storage.cache.KeyValueCache;
+import nicok.bac.yolo3d.storage.cache.TrackingKeyValueCache;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -13,7 +13,7 @@ import static java.util.Objects.requireNonNull;
 
 public abstract class PersistentList<T> implements AutoCloseable {
 
-    private final KeyValueCache<Long, T> cache;
+    private final TrackingKeyValueCache<Long, T> cache;
     protected final String path;
     protected final RandomAccessFile file;
     public long size;
@@ -21,7 +21,7 @@ public abstract class PersistentList<T> implements AutoCloseable {
 
     protected PersistentList(final String path, final long size, final long itemSize) throws IOException {
         this.path = requireNonNull(path);
-        this.cache = new KeyValueCache<>(1000);
+        this.cache = new TrackingKeyValueCache<>(1000);
         this.file = new RandomAccessFile(path, "rw");
         this.itemSize = itemSize;
 
@@ -31,10 +31,6 @@ public abstract class PersistentList<T> implements AutoCloseable {
         if (fileSize % itemSize != 0) {
             throw new IOException("File size is not a multiple of item size");
         }
-
-//        if (fileSize / itemSize != size) {
-//            throw new IOException("File size does not match expected size. Expected: " + size + ", actual: " + fileSize / itemSize);
-//        }
     }
 
     public int size() {

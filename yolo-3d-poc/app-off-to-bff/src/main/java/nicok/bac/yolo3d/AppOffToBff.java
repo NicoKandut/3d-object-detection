@@ -12,6 +12,10 @@ import static nicok.bac.yolo3d.terminal.CommandLineUtil.parseCommandLine;
 import static nicok.bac.yolo3d.util.DirectoryUtil.requireExtension;
 import static nicok.bac.yolo3d.util.StringUtil.requireNonBlank;
 
+/**
+ * This application converts an .off file to a .bff file.
+ * Example usage: <pre>java -jar app-off-to-bff.jar -i input.off -o output.bff</pre>
+ */
 public class AppOffToBff {
 
     public static final Options OPTIONS = new Options()
