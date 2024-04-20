@@ -3,6 +3,7 @@ package nicok.bac.yolo3d.storage.chunkstore;
 import nicok.bac.yolo3d.boundingbox.BoundingBox;
 import nicok.bac.yolo3d.mesh.Vertex;
 import nicok.bac.yolo3d.storage.BinaryWriter;
+import nicok.bac.yolo3d.storage.FloatRead3D;
 import nicok.bac.yolo3d.storage.FloatWrite3D;
 import nicok.bac.yolo3d.storage.cache.CacheStatistics;
 import nicok.bac.yolo3d.storage.cache.TrackingAutoCloseableKeyValueCache;
@@ -20,7 +21,7 @@ import java.util.stream.Stream;
 import static java.util.Objects.requireNonNull;
 
 
-public class ChunkStore implements CacheStatistics, FloatWrite3D {
+public class ChunkStore implements CacheStatistics, FloatWrite3D, FloatRead3D {
 
     private static final long CHUNK_SIZE = 112;
 
@@ -33,10 +34,6 @@ public class ChunkStore implements CacheStatistics, FloatWrite3D {
         this.chunkFileCache = new TrackingAutoCloseableKeyValueCache<>(20);
         this.path = getPath(name);
         this.boundingBox = new BoundingBox.Builder();
-    }
-
-    public String path() {
-        return this.path.toString();
     }
 
     private Path getPath(final String name) {
@@ -244,5 +241,10 @@ public class ChunkStore implements CacheStatistics, FloatWrite3D {
             final var boundingBox = this.boundingBox();
             BinaryWriter.write(stream, boundingBox);
         }
+    }
+
+    @Override
+    public float get(int x, int y, int z) {
+        return query(new Vertex(x, y, z));
     }
 }

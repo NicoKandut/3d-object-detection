@@ -12,7 +12,6 @@ import org.apache.commons.math3.util.Pair;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public final class VoxFileUtil {

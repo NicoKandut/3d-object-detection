@@ -2,9 +2,8 @@ package nicok.bac.yolo3d.inputfile;
 
 import nicok.bac.yolo3d.boundingbox.BoundingBox;
 import nicok.bac.yolo3d.common.Volume3D;
-import nicok.bac.yolo3d.storage.chunkstore.ChunkStore;
-import nicok.bac.yolo3d.mesh.Vertex;
 import nicok.bac.yolo3d.preprocessing.Transformation;
+import nicok.bac.yolo3d.storage.chunkstore.ChunkStore;
 
 import java.io.IOException;
 
@@ -26,11 +25,11 @@ public class ChunkStoreAdapter implements InputFile {
         for (var z = 0; z < target.size().z(); ++z) {
             for (var y = 0; y < target.size().y(); ++y) {
                 for (var x = 0; x < target.size().x(); ++x) {
-                    final var value = chunkStore.query(new Vertex(
-                            target.min().x() + x,
-                            target.min().y() + y,
-                            target.min().z() + z
-                    ));
+                    final var value = chunkStore.get(
+                            (int) target.min().x() + x,
+                            (int) target.min().y() + y,
+                            (int) target.min().z() + z
+                    );
                     volume.set(x, y, z, value);
                 }
             }
@@ -40,8 +39,8 @@ public class ChunkStoreAdapter implements InputFile {
     }
 
     @Override
-    public ChunkStore createChunkStore() throws IOException {
-        throw new UnsupportedOperationException("Not implemented");
+    public ChunkStore createChunkStore() {
+        return this.chunkStore;
     }
 
     @Override

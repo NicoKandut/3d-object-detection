@@ -9,9 +9,6 @@ public record TriangleVertex(
         Vertex vertex2,
         Vertex vertex3
 ) {
-    public double minZ() {
-        return Double.min(vertex1.z(), Double.min(vertex2.z(), vertex3.z()));
-    }
 
     public List<Vertex> sortedVerticesZ() {
         return Stream.of(vertex1, vertex2, vertex3)

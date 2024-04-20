@@ -1,8 +1,6 @@
 package nicok.bac.yolo3d.collection;
 
-import nicok.bac.yolo3d.boundingbox.BoundingBox;
 import nicok.bac.yolo3d.common.ResultBoundingBox;
-import nicok.bac.yolo3d.mesh.Vertex;
 import nicok.bac.yolo3d.storage.BinaryReader;
 import nicok.bac.yolo3d.storage.BinaryWriter;
 import nicok.bac.yolo3d.util.DirectoryUtil;

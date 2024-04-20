@@ -15,9 +15,7 @@ public class FitToBox implements Transformation {
         final var fromOrigin = Vertex.sub(vertex, this.sourceBoundingBox.min());
         final var scaled = Vertex.mul(fromOrigin, scale);
         final var fromTargetMin = Vertex.add(scaled, this.targetBoundingBox.min());
-        final var transformed = Vertex.add(fromTargetMin, this.offset);
-
-        return transformed;
+        return Vertex.add(fromTargetMin, this.offset);
     }
 
     public FitToBox withSourceBoundingBox(final BoundingBox sourceBoundingBox) {

@@ -105,10 +105,6 @@ public class Voxelizer {
                         .sorted(Comparator.comparing(PointX::x))
                         .toList();
 
-//                if (pointsAtY.size() % 2 == 1) {
-//                    System.out.println("Warning: uneven number of points will cause artifacts. y=" + volY + ", z=" + volZ);
-//                }
-
                 var fillDepth = 0;
                 var volX = 0;
                 var pointIndex = 0;
@@ -149,7 +145,5 @@ public class Voxelizer {
         if (print) {
             System.out.println("done");
         }
-
-        // TODO: line ends left over. not an issue visually but might be worth cleaning up
     }
 }

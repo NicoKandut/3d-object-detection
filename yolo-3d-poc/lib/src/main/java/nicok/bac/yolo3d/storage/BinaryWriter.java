@@ -8,10 +8,8 @@ import nicok.bac.yolo3d.mesh.Vertex;
 import nicok.bac.yolo3d.storage.bff.BffFormat;
 import nicok.bac.yolo3d.storage.bff.BffHeader;
 
-import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 
 /**
  * Writes binary data to a {@link DataOutput}.
@@ -42,7 +40,7 @@ public final class BinaryWriter {
     }
 
     public static void write(final DataOutput output, final Vertex vertex, final long bytesPerValue) throws IOException {
-        if(bytesPerValue == 4) {
+        if (bytesPerValue == 4) {
             output.writeFloat((float) vertex.x());
             output.writeFloat((float) vertex.y());
             output.writeFloat((float) vertex.z());

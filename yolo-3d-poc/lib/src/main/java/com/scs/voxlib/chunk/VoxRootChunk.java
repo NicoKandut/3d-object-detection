@@ -97,7 +97,7 @@ public final class VoxRootChunk extends VoxChunk {
 		} else if (chunk instanceof VoxShapeChunk shapeChunk) {
             this.shapeChunks.put(shapeChunk.id, shapeChunk);
 		} else if (chunk instanceof VoxTransformChunk transformChunk) {
-            if (this.transformChunks.size() == 0) {
+            if (this.transformChunks.isEmpty()) {
 				root_transform = transformChunk;
 			}
 			this.transformChunks.put(transformChunk.id, transformChunk);

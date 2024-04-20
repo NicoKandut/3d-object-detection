@@ -72,7 +72,7 @@ public class AppBffShuffle {
                     bffWriter.writeVertex(vertex);
                 }
 
-                // TODO: does not support large files but its low prio
+                // TODO: does not support large files but its low priority
                 for (long faceIndex = 0; faceIndex < faces.size(); faceIndex++) {
                     final var originalFace = faces.get(newFaceOrder.get((int) faceIndex));
                     final var shuffledFace = new Face(List.of(

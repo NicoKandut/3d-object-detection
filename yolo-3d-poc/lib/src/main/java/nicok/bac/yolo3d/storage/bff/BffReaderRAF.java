@@ -1,6 +1,5 @@
 package nicok.bac.yolo3d.storage.bff;
 
-import nicok.bac.yolo3d.boundingbox.BoundingBox;
 import nicok.bac.yolo3d.mesh.Face;
 import nicok.bac.yolo3d.mesh.Vertex;
 import nicok.bac.yolo3d.storage.BinaryReader;
@@ -10,12 +9,11 @@ import nicok.bac.yolo3d.storage.cache.TrackingKeyValueCache;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.util.List;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
-import static nicok.bac.yolo3d.storage.bff.BffFormat.*;
+import static nicok.bac.yolo3d.storage.bff.BffFormat.getFacePosition;
+import static nicok.bac.yolo3d.storage.bff.BffFormat.getVertexPosition;
 import static nicok.bac.yolo3d.util.DirectoryUtil.requireExtension;
 
 public class BffReaderRAF implements AutoCloseable, CacheStatistics, RandomAccessMeshReader {

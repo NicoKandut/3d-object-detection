@@ -7,7 +7,6 @@ import nicok.bac.yolo3d.preprocessing.FitToBox;
 import nicok.bac.yolo3d.storage.chunkstore.ChunkStore;
 import org.apache.commons.cli.Options;
 
-import static java.util.Objects.requireNonNull;
 import static nicok.bac.yolo3d.terminal.CommandLineUtil.*;
 import static nicok.bac.yolo3d.util.DirectoryUtil.getFilename;
 import static nicok.bac.yolo3d.util.StringUtil.requireNonBlank;

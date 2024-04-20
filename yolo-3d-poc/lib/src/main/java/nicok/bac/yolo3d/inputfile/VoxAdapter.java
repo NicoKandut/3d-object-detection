@@ -17,15 +17,12 @@ import java.util.List;
 public class VoxAdapter implements InputFile {
 
     private List<Voxel> voxels;
-    private final int[] palette;
     private BoundingBox boundingBox;
-
 
     public VoxAdapter(final String path) throws IOException {
         try (final var reader = new VoxReader(new FileInputStream(path))) {
             final var voxFile = reader.read();
 
-            palette = voxFile.getPalette();
             voxels = getVoxels(voxFile);
             boundingBox = getBoundingBox(voxFile);
         }
@@ -44,10 +41,6 @@ public class VoxAdapter implements InputFile {
                         new Vertex(voxel.getPosition().x, voxel.getPosition().y, voxel.getPosition().z)
                 ))
                 .forEach(v -> {
-                    final var material = palette[v.getColourIndex()];
-                    final var r = (float) (material & 0xFF) / 255f;
-                    final var g = (float) (material >> 8 & 0xFF) / 255f;
-                    final var b = (float) (material >> 16 & 0xFF) / 255f;
                     final var x = v.getPosition().y - (int) target.min().y();
                     final var y = (int) target.size().z() - (v.getPosition().z % (int) target.size().z()) - 1;
                     final var z = v.getPosition().x - (int) target.min().x();
