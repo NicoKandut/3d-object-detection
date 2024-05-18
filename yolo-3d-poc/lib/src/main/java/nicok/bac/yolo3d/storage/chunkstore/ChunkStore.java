@@ -7,7 +7,6 @@ import nicok.bac.yolo3d.storage.FloatRead3D;
 import nicok.bac.yolo3d.storage.FloatWrite3D;
 import nicok.bac.yolo3d.storage.cache.CacheStatistics;
 import nicok.bac.yolo3d.storage.cache.TrackingAutoCloseableKeyValueCache;
-import nicok.bac.yolo3d.util.DirectoryUtil;
 import nicok.bac.yolo3d.util.RepositoryPaths;
 import org.apache.commons.math3.util.Pair;
 
@@ -19,6 +18,7 @@ import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
+import static nicok.bac.yolo3d.storage.chunkstore.ChunkFileUtil.*;
 
 
 public class ChunkStore implements CacheStatistics, FloatWrite3D, FloatRead3D {
@@ -106,7 +106,7 @@ public class ChunkStore implements CacheStatistics, FloatWrite3D, FloatRead3D {
 
         // get position in chunk
         final var relativePosition = Vertex.sub(normalizedPosition, Vertex.mul(chunkPosition, CHUNK_SIZE));
-        final var index = getIndex(relativePosition);
+        final var index = indexFromRelativePosition(relativePosition, CHUNK_SIZE);
 
         try {
             chunkRAF.seek(index);
@@ -138,12 +138,7 @@ public class ChunkStore implements CacheStatistics, FloatWrite3D, FloatRead3D {
                     .filter(p -> !p.getFileName().toString().contains("bounds"))
                     .map(Path::toString)
                     .flatMap(chunkPath -> {
-                        final var name = DirectoryUtil.getFilename(chunkPath);
-                        final var xyz = name.split("_");
-                        final var x = Long.parseLong(xyz[0]);
-                        final var y = Long.parseLong(xyz[1]);
-                        final var z = Long.parseLong(xyz[2]);
-                        final var chunkPosition = Vertex.mul(new Vertex(x, y, z), CHUNK_SIZE);
+                        final var chunkPosition = ChunkFileUtil.getChunkPosition(chunkPath, CHUNK_SIZE);
 
                         try {
                             final var chunkStream = new DataInputStream(new BufferedInputStream(new FileInputStream(chunkPath)));
@@ -151,11 +146,7 @@ public class ChunkStore implements CacheStatistics, FloatWrite3D, FloatRead3D {
                                     .mapToObj(i -> {
                                         try {
                                             final var value = chunkStream.readByte();
-                                            final var position = Vertex.add(chunkPosition, new Vertex(
-                                                    (double) (i % CHUNK_SIZE),
-                                                    (double) ((i / CHUNK_SIZE) % CHUNK_SIZE),
-                                                    (double) (i / (CHUNK_SIZE * CHUNK_SIZE))
-                                            ));
+                                            final var position = Vertex.add(chunkPosition, relativePositionFromIndex(i, CHUNK_SIZE));
                                             return new Pair<>(position, (float) value);
                                         } catch (final IOException e) {
                                             throw new RuntimeException(e);
@@ -168,6 +159,7 @@ public class ChunkStore implements CacheStatistics, FloatWrite3D, FloatRead3D {
         }
     }
 
+
     private float computeValueAtPosition(final Vertex position) {
 
         // normalized
@@ -175,12 +167,11 @@ public class ChunkStore implements CacheStatistics, FloatWrite3D, FloatRead3D {
 
         // get chunk
         final var chunkPosition = computeChunkPosition(normalizedPosition);
-
         final var chunkRAF = this.chunkFileCache.computeIfAbsent(chunkPosition, this::computeChunkFile);
 
         // position in chunk
         final var relativePosition = Vertex.sub(normalizedPosition, Vertex.mul(chunkPosition, CHUNK_SIZE));
-        final var index = getIndex(relativePosition);
+        final var index = indexFromRelativePosition(relativePosition, CHUNK_SIZE);
 
         try {
             chunkRAF.seek(index);
@@ -196,7 +187,7 @@ public class ChunkStore implements CacheStatistics, FloatWrite3D, FloatRead3D {
     }
 
     private RandomAccessFile computeChunkFile(final Vertex chunkPosition) {
-        final var chunkPath = getChunkPath(chunkPosition);
+        final var chunkPath = getChunkPath(this.path.toString(), chunkPosition);
         try {
             final var path = Path.of(chunkPath);
             if (!Files.exists(path)) {
@@ -211,15 +202,6 @@ public class ChunkStore implements CacheStatistics, FloatWrite3D, FloatRead3D {
         }
     }
 
-    private String getChunkPath(Vertex chunkPosition) {
-        return this.path + "/" + (int) chunkPosition.x() + "_" + (int) chunkPosition.y() + "_" + (int) chunkPosition.z() + ".bin";
-    }
-
-    private long getIndex(final Vertex relativePosition) {
-        return (long) relativePosition.x()
-                + (long) relativePosition.y() * CHUNK_SIZE
-                + (long) relativePosition.z() * CHUNK_SIZE * CHUNK_SIZE;
-    }
 
     public BoundingBox boundingBox() {
         return this.boundingBox.build();
