@@ -1,0 +1,79 @@
+PSB 1
+9 59
+
+animal 0 0
+
+arthropod animal 0
+
+insect arthropod 0
+
+spider arthropod 11
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+
+biped animal 0
+
+human biped 0
+
+human_arms_out human 41
+219
+221
+223
+225
+227
+229
+231
+233
+235
+237
+239
+241
+243
+245
+247
+249
+251
+253
+255
+257
+218
+220
+222
+224
+226
+228
+230
+232
+234
+236
+238
+240
+242
+244
+246
+248
+250
+252
+254
+256
+258
+
+underwater_creature animal 0
+
+shark underwater_creature 7
+75
+76
+77
+78
+79
+80
+81
