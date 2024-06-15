@@ -21,7 +21,7 @@ public class AppBffTraverse {
         final var commandLine = parseCommandLine("AppBffTraverse", args, OPTIONS);
         final var inputPath = commandLine.getOptionValue("input");
 
-        requireNonBlank(inputPath);
+        requireNonBlank(inputPath, "input path must not be empty");
         requireExtension(inputPath, ".bff");
 
         System.out.println("Correlating Faces And Vertices");

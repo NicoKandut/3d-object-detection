@@ -34,8 +34,8 @@ public class AppCreateBigFile {
         // parse CLI arguments
         final var commandLine = parseCommandLine("AppCreateBigFile", args, OPTIONS);
         final var outputPath = parseFilePath(commandLine, "output", ".bff", ".off");
-        final var size = parsePoint(commandLine, "size");
-        final var modelSize = parseDoubleRange(commandLine, "model-size");
+        final var size = parsePoint(commandLine, "size", "size argument must not be empty");
+        final var modelSize = parseDoubleRange(commandLine, "model-size", "model-size must not be empty");
         final var minModelSize = modelSize.getFirst();
         final var maxModelSize = modelSize.getSecond();
         final var n = parseInt(commandLine.getOptionValue("n"));

@@ -24,7 +24,7 @@ public class PsbDataset {
     private String path;
 
     public PsbDataset withPath(final String path) throws IOException {
-        requireNonBlank(path);
+        requireNonBlank(path, "PSB dataset path must not be empty");
 
         this.path = path;
         scanClaFile(this.path + CLA_TRAIN, trainModels, trainLabels);

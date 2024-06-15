@@ -38,12 +38,13 @@ public final class CommandLineUtil {
 
     public static Vertex parsePoint(
             final CommandLine commandLine,
-            final String argumentName
+            final String argumentName,
+            final String message
     ) {
-        requireNonBlank(argumentName);
+        requireNonBlank(argumentName, message);
 
         final var sizeString = commandLine.getOptionValue(argumentName);
-        requireNonBlank(sizeString);
+        requireNonBlank(sizeString, message);
 
         final var parts = sizeString.split(",");
         requireLength(parts, 3);
@@ -57,12 +58,13 @@ public final class CommandLineUtil {
 
     public static Pair<Double, Double> parseDoubleRange(
             final CommandLine commandLine,
-            final String argumentName
+            final String argumentName,
+            final String message
     ) {
-        requireNonBlank(argumentName);
+        requireNonBlank(argumentName, message);
 
         final var sizeString = commandLine.getOptionValue(argumentName);
-        requireNonBlank(sizeString);
+        requireNonBlank(sizeString, message);
 
         final var parts = sizeString.split(",");
         requireLength(parts, 2);

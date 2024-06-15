@@ -32,7 +32,7 @@ public final class DirectoryUtil {
     }
 
     public static void requireExtension(final String path, final String... extensions) {
-        requireNonBlank(path);
+        requireNonBlank(path, "extension must not be empty");
         requireNonNull(extensions);
         for (final String extension : extensions) {
             requireNonNull(extension);

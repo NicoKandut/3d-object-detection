@@ -10,6 +10,7 @@ import nicok.bac.yolo3d.common.Volume3D;
 import nicok.bac.yolo3d.storage.chunkstore.ChunkStore;
 import org.apache.commons.math3.util.Pair;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
@@ -40,6 +41,13 @@ public final class VoxFileUtil {
             final String filename,
             final ChunkStore chunkStore
     ) {
+        final var file = new File(filename);
+        try {
+            if (!file.exists() && !file.createNewFile())
+                throw new RuntimeException("Failed to create file: " + filename);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to create file: " + filename, e);
+        }
         try (final var writer = new VoxWriter(new FileOutputStream(filename))) {
             final var root = new VoxRootChunk();
 

@@ -28,8 +28,8 @@ public class AppOffToBff {
         final var inputPath = commandLine.getOptionValue("input");
         final var outputTarget = commandLine.getOptionValue("output");
 
-        requireNonBlank(inputPath);
-        requireNonBlank(outputTarget);
+        requireNonBlank(inputPath, "input path must not be empty");
+        requireNonBlank(outputTarget, "output path must not be empty");
         requireExtension(inputPath, ".off");
 
         final var outputPath = getOutputPath(outputTarget, inputPath);

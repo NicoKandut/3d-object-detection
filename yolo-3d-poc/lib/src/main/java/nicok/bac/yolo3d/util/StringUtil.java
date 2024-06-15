@@ -4,9 +4,9 @@ import static java.util.Objects.requireNonNull;
 
 public final class StringUtil {
 
-    public static String requireNonBlank(final String value) {
-        if (requireNonNull(value).isBlank()) {
-            throw new IllegalArgumentException("String value cannot be blank");
+    public static String requireNonBlank(final String value, final String message) {
+        if (requireNonNull(value, message).isBlank()) {
+            throw new IllegalArgumentException(message);
         }
         return value;
     }
