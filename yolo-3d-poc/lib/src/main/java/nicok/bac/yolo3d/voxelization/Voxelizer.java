@@ -64,6 +64,19 @@ public class Voxelizer {
             final BoundingBox boundingBox,
             final boolean print
     ) {
+        voxelizeTo(target, triangleEvents, reader, voxelSize, boundingBox, print, false);
+    }
+
+    private static void voxelizeTo(
+            final FloatWrite3D target,
+            final TriangleEventIterator triangleEvents,
+            final RandomAccessMeshReader reader,
+            final double voxelSize,
+            final BoundingBox boundingBox,
+            final boolean print,
+            final boolean reverseWinding
+    ) {
+
         final var progress = new ProgressBar(20, (long) (boundingBox.size().z() / voxelSize));
         final var faces = new HashMap<Long, TriangleVertex>();
 
@@ -112,7 +125,8 @@ public class Voxelizer {
                     var override = false;
                     while (pointIndex < pointsAtY.size() && pointsAtY.get(pointIndex).x() < x) {
                         override = true;
-                        final var normal = pointsAtY.get(pointIndex).normal();
+                        final var normal = pointsAtY.get(pointIndex).normal() * (reverseWinding ? -1 : 1);
+
                         if (normal < 0) {
                             fillDepth += 1;
                         }

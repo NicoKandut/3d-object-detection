@@ -42,7 +42,9 @@ public class AppVoxelize {
             final var chunkStore = inputFile.createChunkStore();
             chunkStore.writeHeaderFile();
 
-            writeChunkStoreToVox(inputPath, voxPath, chunkStore);
+            if(voxPath != null && !voxPath.isBlank()) {
+                writeChunkStoreToVox(inputPath, voxPath, chunkStore);
+            }
         } catch (final Exception exception) {
             System.out.println("Error: " + exception.getMessage());
             throw exception;

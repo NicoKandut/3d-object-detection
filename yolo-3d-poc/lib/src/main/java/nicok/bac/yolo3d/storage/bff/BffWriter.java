@@ -50,10 +50,12 @@ public final class BffWriter implements AutoCloseable, OrderedMeshWriter {
     }
 
     public void writeHeader() throws IOException {
+        this.stream.flush();
         final var header = getHeader();
-        try (final var headerStream = new RandomAccessFile(this.path, "rw")) {
-            BinaryWriter.write(headerStream, header);
-        }
+        final var headerStream = new RandomAccessFile(path, "rw");
+        headerStream.seek(0);
+        BinaryWriter.write(headerStream, header);
+        headerStream.close();
     }
 
     @Override

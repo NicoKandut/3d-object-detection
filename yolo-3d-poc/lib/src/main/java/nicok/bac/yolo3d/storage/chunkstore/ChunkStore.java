@@ -37,9 +37,8 @@ public class ChunkStore implements CacheStatistics, FloatWrite3D, FloatRead3D {
     }
 
     private Path getPath(final String name) {
-        final var path = Path.of(name);
-        return path.isAbsolute()
-                ? path
+        return name.contains(".chunks")
+                ? Path.of(name)
                 : Path.of(RepositoryPaths.VOLUME_DATA_TEMP, name + ".chunks");
     }
 
@@ -133,10 +132,13 @@ public class ChunkStore implements CacheStatistics, FloatWrite3D, FloatRead3D {
 
     public Stream<Pair<Vertex, Float>> queryAll() throws IOException {
         try (final var files = Files.walk(path, 1)) {
-            return files
+            final var chunkFiles = files
                     .filter(Files::isRegularFile)
-                    .filter(p -> !p.getFileName().toString().contains("bounds"))
                     .map(Path::toString)
+                    .filter(f -> !f.contains("bounds"))
+                    .toList();
+
+            return chunkFiles.stream()
                     .flatMap(chunkPath -> {
                         final var chunkPosition = ChunkFileUtil.getChunkPosition(chunkPath, CHUNK_SIZE);
 

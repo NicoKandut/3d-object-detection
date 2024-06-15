@@ -26,7 +26,6 @@ public record Scanner() {
         final var progressBar = new ProgressBar(20, nrScans);
         final var boxWriter = PersistentResultBoundingBoxList.writer(RepositoryPaths.BOX_DATA_TEMP + "/scan.boxes");
         var nrBoxes = 0;
-
         var x = extent.min().x();
         var y = extent.min().y();
         var z = extent.min().z();
