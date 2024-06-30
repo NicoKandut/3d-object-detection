@@ -12,8 +12,8 @@ This poses two large challenges
 This repository contains multiple applications and one library.
 All apps utilize the library to a certain extent.
 
-To get a better understanding of the project, I suggest you check out [app-scan-big-file](./app-scan-big-file) first. 
-It encapsulates the core idea of the project. 
+To get a better understanding of the project, I suggest you check out [app-scan-big-file](./app-scan-big-file) first.
+It encapsulates the core idea of the project.
 
 ### Applications
 
@@ -62,4 +62,31 @@ The library ([lib](/lib)) contains all reusable code in this project.
   Contains files used to sort large collections
 - [volume](./volume)
 
-  Contains voxelized files 
+  Contains voxelized files
+
+## Process Overview
+
+The whole process of scanning a large file looks as like this. The diagram should be read left to right and the arrows
+represent data-flow.
+
+![img/process.jpg](img/process.jpg)
+
+For more details check out the corresponding classes:
+
+- [Voxelizer](lib/src/main/java/nicok/bac/yolo3d/voxelization/Voxelizer.java)
+- [Network](lib/src/main/java/nicok/bac/yolo3d/network/Yolo3dNetwork.java)
+- [Scanner](lib/src/main/java/nicok/bac/yolo3d/scanner/Scanner.java)
+- [BoxFilter](lib/src/main/java/nicok/bac/yolo3d/BoxFilter.java)
+
+## File Formats
+
+It is also important to understand that not every file format is suited for scanning. 
+Some must be converted first.
+
+The following diagram shows the currently implemented conversions.
+
+In general, `.chunks` are recommended for scanning.
+However, this is just a recommendation for performance.
+Feel free to implement scanning for any other type as you please.
+
+![img/process.jpg](img/file_formats.jpg)

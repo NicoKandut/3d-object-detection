@@ -3,6 +3,7 @@ package nicok.bac.yolo3d.storage.off;
 import nicok.bac.yolo3d.mesh.Face;
 import nicok.bac.yolo3d.mesh.Vertex;
 import nicok.bac.yolo3d.util.ThrowingConsumer;
+import nicok.bac.yolo3d.util.Triangulation;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -12,6 +13,7 @@ import java.util.Objects;
 import java.util.StringTokenizer;
 
 import static java.util.Objects.requireNonNull;
+import static nicok.bac.yolo3d.util.ExceptionUtil.unchecked;
 
 /**
  * A reader for the OFF file format.
@@ -90,7 +92,10 @@ public final class OffReader implements AutoCloseable {
                 final var index = Long.parseLong(tokenStream.nextToken());
                 faceVertexIndices.add(index);
             }
-            onFace.accept(new Face(faceVertexIndices));
+
+            Triangulation.shell(new Face(faceVertexIndices))
+                    .map(Face::from)
+                    .forEach(unchecked(onFace::accept));
         }
     }
 
