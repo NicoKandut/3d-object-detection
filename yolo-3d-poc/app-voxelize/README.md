@@ -2,17 +2,17 @@
 
 This app can be used to voxelize .off files.
 
-The voxelized files will be converted to .vox files.
-These can be easily inspected with MagicaVoxel.
+The voxelized files can be converted to both a chunkstore and .vox files.
+Chunkstores are used for easy access from other applications while VOX-files can be easily inspected with MagicaVoxel.
 
 Of course the end goal is not to view files in MagicaVoxel but to feed them into a CNN.
 
 ## Arguments
 
 - `-i` or `--input` (required): The input file.
-- `-o` or `--output` (required): The output directory.
 - `-s` or `--size` (required): The size of the voxel grid. Format: 112,112,112
 - `-f` or `--fit` (optional): Fit the model to the bounding box by scaling it up but preserving aspect ratios. Default is false.
+- `-v` or `--vox` (optional): Saves a VOX file of the voxelized file. Useful for debugging.
 - `-h` or `--help`: Show the help message.
 
 

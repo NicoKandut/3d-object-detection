@@ -10,7 +10,7 @@ The reason for this is that tensorflow training is much easier in python when co
 
 - `e` or `--epochs` (required): The number of epochs to train the model on one dataset
 - `se` or `--super-epochs` (required): The number of times a new dataset is loaded and the model is trained on it
-- 'v' or '--variations' (required): The number of variations per model
+- `v` or `--variations` (required): The number of variations per model
 - `pd` or `--prepare-dataset`: Regenerate dataset files, if omitted, the app will use the existing dataset
 - `h` or `--help`: Show the help message
 

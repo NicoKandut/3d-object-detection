@@ -43,7 +43,5 @@ build/
 *.bff
 *.vox
 *.map
-
-sorting
-volume
-boxes
+*.idx
+*.bin

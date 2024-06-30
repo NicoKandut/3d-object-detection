@@ -54,12 +54,12 @@ The library ([lib](/lib)) contains all reusable code in this project.
 
 ### Helper directories
 
-- boxes
+- [boxes](./boxes)
 
   Contains files that contain a list of bounding boxes detected by scans.
-- sorting
+- [sorting](./sorting)
 
   Contains files used to sort large collections
-- volume
+- [volume](./volume)
 
   Contains voxelized files 
